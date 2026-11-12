@@ -1,0 +1,499 @@
+{
+  "courses": [
+    {
+      "id": "course-vlsi-01",
+      "title": "RTL to GDSII: Complete ASIC Tapeout & Physical Design Flow",
+      "slug": "rtl-to-gdsii-tapeout-flow",
+      "category": "VLSI",
+      "level": "Advanced",
+      "duration": "14 Weeks (120 hrs)",
+      "lessonsCount": 36,
+      "rating": 4.95,
+      "reviewsCount": 342,
+      "instructor": {
+        "name": "R. K. Narayanan",
+        "title": "Principal Physical Design Lead",
+        "avatar": "/assets/img/team.jpg",
+        "company": "Ample Semiconductors"
+      },
+      "thumbnail": "/assets/img/service-vlsi.jpg",
+      "tagline": "From Verilog RTL to Floorplanning, Clock Tree Synthesis, and Sign-off STA for sub-14nm Silicon",
+      "description": "Master the complete silicon implementation journey. You will take a high-frequency RISC-V SoC subsystem from synthesizable RTL through logical synthesis, floorplanning, placement, clock tree synthesis (CTS), routing, Static Timing Analysis (STA), and DRC/LVS physical sign-off.",
+      "targetRole": "Physical Design Engineer / STA Sign-off Engineer",
+      "toolsLearned": [
+        "Synopsys ICC2",
+        "PrimeTime",
+        "Innovus",
+        "OpenROAD",
+        "SkyWater 130nm PDK"
+      ],
+      "enrolledCount": 1420,
+      "sampleLabCode": "// 4-bit Synchronous Up-Counter with Synchronous Reset\nmodule sync_counter (\n    input  wire       clk,\n    input  wire       rst_n,\n    input  wire       enable,\n    output reg  [3:0] count,\n    output wire       overflow\n);\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) count <= 4'b0000;\n        else if (enable) count <= count + 1'b1;\n    end\n    assign overflow = (count == 4'b1111) && enable;\nendmodule",
+      "modules": [
+        {
+          "id": "mod-1",
+          "title": "Module 1: Front-End RTL Synthesis & SDC Timing Constraints",
+          "lessons": [
+            {
+              "id": "les-101",
+              "title": "Synopsys Design Constraints (SDC) Fundamentals",
+              "duration": "45 mins",
+              "type": "video",
+              "completed": true,
+              "content": {
+                "summary": "Deep dive into create_clock, set_clock_uncertainty, set_input_delay, and multi-cycle paths.",
+                "keyTakeaways": [
+                  "How clock uncertainty accounts for clock jitter and fabrication variation.",
+                  "Specifying input and output delays relative to virtual and physical clocks.",
+                  "False paths vs. multi-cycle path definitions for real-world bus protocols."
+                ],
+                "theoryText": "Static Timing Analysis (STA) verifies that every registered path satisfies setup (max-delay) and hold (min-delay) constraints."
+              }
+            },
+            {
+              "id": "les-102",
+              "title": "Synthesis Optimization & Gate-Level Netlist Mapping",
+              "duration": "60 mins",
+              "type": "lab",
+              "completed": true,
+              "content": {
+                "summary": "Transform RTL into cell gates while meeting Power, Performance, and Area (PPA) targets.",
+                "keyTakeaways": [
+                  "Standard cell library LEF/Liberty (.lib) format parsing.",
+                  "High-effort timing-driven logic structuring vs area recovery."
+                ],
+                "theoryText": "Logic synthesis converts HDL code (Verilog/VHDL) into technology-specific gate-level representations."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-vlsi-02",
+      "title": "Advanced SystemVerilog & UVM Design Verification (DV) Elite",
+      "slug": "systemverilog-uvm-verification",
+      "category": "VLSI",
+      "level": "Intermediate",
+      "duration": "10 Weeks (90 hrs)",
+      "lessonsCount": 28,
+      "rating": 4.92,
+      "reviewsCount": 280,
+      "instructor": {
+        "name": "Vikram Malhotra",
+        "title": "Senior Verification Specialist",
+        "avatar": "/assets/img/team.jpg",
+        "company": "Ample Semiconductors"
+      },
+      "thumbnail": "/assets/img/logic-design.jpg",
+      "tagline": "Build industry-grade reusable UVM testbenches, assertions, coverage models, and scoreboards",
+      "description": "Design Verification makes up 70% of modern chip design cycles. Master SystemVerilog OOP, constrained-random stimulus generation, functional coverage, SystemVerilog Assertions (SVA), and full Universal Verification Methodology (UVM 1.2) components.",
+      "targetRole": "Design Verification Engineer / DV Lead",
+      "toolsLearned": [
+        "Synopsys VCS",
+        "Cadence Xcelium",
+        "Verilator",
+        "SystemVerilog / UVM 1.2"
+      ],
+      "enrolledCount": 980,
+      "sampleLabCode": "// UVM Sequence Item Definition\nclass axi_transaction extends uvm_sequence_item;\n    rand bit [31:0] addr;\n    rand bit [31:0] data;\n    `uvm_object_utils_begin(axi_transaction)\n        `uvm_field_int(addr, UVM_ALL_ON)\n        `uvm_field_int(data, UVM_ALL_ON)\n    `uvm_object_utils_end\nendclass",
+      "modules": [
+        {
+          "id": "uvm-mod-1",
+          "title": "Module 1: SystemVerilog OOP for Verification Architecture",
+          "lessons": [
+            {
+              "id": "uvm-les-101",
+              "title": "Classes, Inheritance, Virtual Methods, and Polymorphism",
+              "duration": "50 mins",
+              "type": "video",
+              "completed": false,
+              "content": {
+                "summary": "Master OOP principles specifically as applied to hardware verification testbenches.",
+                "keyTakeaways": [
+                  "Virtual methods enabling run-time polymorphism for drivers and scoreboards."
+                ],
+                "theoryText": "SystemVerilog OOP enables modular verification architectures."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-emb-01",
+      "title": "Embedded Linux, RTOS & Device Driver Development",
+      "slug": "embedded-linux-rtos-drivers",
+      "category": "Embedded",
+      "level": "Intermediate",
+      "duration": "12 Weeks (100 hrs)",
+      "lessonsCount": 32,
+      "rating": 4.88,
+      "reviewsCount": 215,
+      "instructor": {
+        "name": "Aditya V. Reddy",
+        "title": "Principal Embedded Systems Architect",
+        "avatar": "/assets/img/team.jpg",
+        "company": "Ample Semiconductors"
+      },
+      "thumbnail": "/assets/img/embedded.jpg",
+      "tagline": "Kernel internals, FreeRTOS scheduling, DMA drivers, and board bring-up for ARM Cortex & RISC-V",
+      "description": "Bridge hardware and software. Learn how to write Linux Character & Platform Device Drivers, configure Device Trees, build customized BSPs with Yocto, and implement real-time multi-threaded applications on FreeRTOS and Zephyr.",
+      "targetRole": "Embedded Software Engineer / Firmware Engineer",
+      "toolsLearned": [
+        "Linux Kernel 6.x",
+        "FreeRTOS",
+        "Yocto Project",
+        "GDB / JTAG",
+        "QEMU ARM"
+      ],
+      "enrolledCount": 840,
+      "sampleLabCode": "/* FreeRTOS Sensor Task */\nvoid vSensorAcquisitionTask(void *pvParameters) {\n    for (;;) {\n        vTaskDelay(pdMS_TO_TICKS(10));\n    }\n}",
+      "modules": [
+        {
+          "id": "emb-mod-1",
+          "title": "Module 1: RTOS Internals & Multi-Thread Synchronization",
+          "lessons": [
+            {
+              "id": "emb-les-101",
+              "title": "Preemptive Scheduling, Priority Inversion & Mutexes",
+              "duration": "45 mins",
+              "type": "video",
+              "completed": false,
+              "content": {
+                "summary": "Understand how real-time schedulers switch context in sub-microsecond intervals.",
+                "keyTakeaways": [
+                  "Preemptive scheduling guarantees highest-priority ready task executes."
+                ],
+                "theoryText": "In hard real-time systems, predictability takes precedence over throughput."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-ai-01",
+      "title": "TinyML & Edge AI Silicon Acceleration",
+      "slug": "tinyml-edge-ai-silicon-accelerators",
+      "category": "AI/ML",
+      "level": "Industry Specialization",
+      "duration": "8 Weeks (65 hrs)",
+      "lessonsCount": 22,
+      "rating": 4.97,
+      "reviewsCount": 160,
+      "instructor": {
+        "name": "Dr. Sameer Joshi",
+        "title": "Head of AI & Silicon Acceleration",
+        "avatar": "/assets/img/team.jpg",
+        "company": "Ample Semiconductors"
+      },
+      "thumbnail": "/assets/img/service-ai-ml.jpg",
+      "tagline": "Quantize, prune, and deploy deep neural networks on microcontrollers and custom NPU silicon cores",
+      "description": "Discover how modern edge computing brings intelligence directly onto milliwatt silicon chips. Learn INT8/INT4 Post-Training Quantization, systolic array matrix-multiplication hardware accelerators, and TensorFlow Lite for Microcontrollers.",
+      "targetRole": "Edge AI Engineer / NPU Architecture Specialist",
+      "toolsLearned": [
+        "TFLite Micro",
+        "ONNX Runtime",
+        "TVM",
+        "Verilog Matrix MAC Engine",
+        "CMSIS-NN"
+      ],
+      "enrolledCount": 650,
+      "sampleLabCode": "# PyTorch INT8 Post-Training Quantization\nimport torch\nimport torch.quantization",
+      "modules": [
+        {
+          "id": "ai-mod-1",
+          "title": "Module 1: Deep Learning Quantization & Silicon Constraints",
+          "lessons": [
+            {
+              "id": "ai-les-101",
+              "title": "Floating Point FP32 to Fixed-Point INT8 Quantization Math",
+              "duration": "40 mins",
+              "type": "video",
+              "completed": false,
+              "content": {
+                "summary": "Learn the mathematical mapping between real numbers and 8-bit integers for 4x memory savings.",
+                "keyTakeaways": [
+                  "Scale factor (S) and Zero-point (Z) calibration techniques."
+                ],
+                "theoryText": "Quantizing to 8-bit integers reduces memory bandwidth by 75% and enables high-throughput integer systolic MAC units."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "trainees": [
+    {
+      "id": "TR-106",
+      "name": "Kandimalla Varun",
+      "email": "kandimalla.varun@ample.com",
+      "track": "VLSI Physical Design & STA",
+      "progress": 5,
+      "labHours": 0,
+      "streak": 1,
+      "passportLevel": "Level 1 Foundation",
+      "interviewStatus": "under_review",
+      "topScore": 0
+    },
+    {
+      "id": "TR-101",
+      "name": "Varun Reddy",
+      "email": "varun.reddy@gmail.com",
+      "track": "VLSI Physical Design & STA",
+      "progress": 92,
+      "labHours": 28.5,
+      "streak": 12,
+      "passportLevel": "Level 2 Sign-off",
+      "interviewStatus": "referred",
+      "topScore": 98
+    },
+    {
+      "id": "TR-102",
+      "name": "Aarav Sharma",
+      "email": "aarav.sharma@outlook.com",
+      "track": "SystemVerilog & UVM Verification",
+      "progress": 88,
+      "labHours": 24,
+      "streak": 15,
+      "passportLevel": "Level 2 Sign-off",
+      "interviewStatus": "referred",
+      "topScore": 95
+    },
+    {
+      "id": "TR-103",
+      "name": "Sneha Kulkarni",
+      "email": "sneha.k@iitb.ac.in",
+      "track": "VLSI Physical Design & STA",
+      "progress": 100,
+      "labHours": 42,
+      "streak": 28,
+      "passportLevel": "Tapeout Certified",
+      "interviewStatus": "hired",
+      "topScore": 99
+    },
+    {
+      "id": "TR-104",
+      "name": "Rohan Mehra",
+      "email": "rohan.m@gmail.com",
+      "track": "Embedded Linux & RTOS",
+      "progress": 74,
+      "labHours": 18.5,
+      "streak": 8,
+      "passportLevel": "Level 1 Foundation",
+      "interviewStatus": "under_review",
+      "topScore": 89
+    },
+    {
+      "id": "TR-105",
+      "name": "Divya Nair",
+      "email": "divya.nair@pes.edu",
+      "track": "TinyML & Edge AI Silicon",
+      "progress": 95,
+      "labHours": 31,
+      "streak": 21,
+      "passportLevel": "Level 2 Sign-off",
+      "interviewStatus": "eligible",
+      "topScore": 96
+    }
+  ],
+  "tapeouts": [
+    {
+      "id": "TAP-2026-08",
+      "candidate": "Varun Reddy",
+      "project": "RV32IM RISC-V SoC Subsystem",
+      "pdk": "SkyWater 130nm",
+      "coreArea": "1.44 mm²",
+      "staSlack": "+0.45ns MET",
+      "drcStatus": "Clean (0 errors)",
+      "lvsStatus": "Matched",
+      "submissionDate": "Today, 2:40 PM",
+      "status": "Approved"
+    },
+    {
+      "id": "TAP-2026-07",
+      "candidate": "Sneha Kulkarni",
+      "project": "AXI-4 Crossbar & DMA Engine",
+      "pdk": "SkyWater 130nm",
+      "coreArea": "1.12 mm²",
+      "staSlack": "+0.62ns MET",
+      "drcStatus": "Clean (0 errors)",
+      "lvsStatus": "Matched",
+      "submissionDate": "Yesterday",
+      "status": "Approved"
+    },
+    {
+      "id": "TAP-2026-06",
+      "candidate": "Aarav Sharma",
+      "project": "Systolic Array 8x8 INT8 MAC",
+      "pdk": "FreePDK 45nm",
+      "coreArea": "0.85 mm²",
+      "staSlack": "-0.12ns Setup (Fixing)",
+      "drcStatus": "Clean (0 errors)",
+      "lvsStatus": "Pending",
+      "submissionDate": "2 days ago",
+      "status": "Action Required"
+    }
+  ],
+  "cohorts": [
+    {
+      "id": "COH-2347",
+      "enrolledCount": 0,
+      "name": "Bengaluru Spring 2026 ASIC Cohort",
+      "campus": "Bengaluru Innovation HQ",
+      "track": "VLSI Physical Design & STA",
+      "startDate": "2026-12-01",
+      "seatLimit": 30,
+      "mentor": "R. K. Narayanan (Ample)"
+    },
+    {
+      "id": "COH-4047",
+      "enrolledCount": 0,
+      "name": "Hyderabad Summer 2026 Verification Elite",
+      "startDate": "2026-06-01",
+      "mentor": "Vikram Malhotra (Ample)",
+      "campus": "Hyderabad Innovation Lab",
+      "track": "Advanced SystemVerilog & UVM Design Verification (DV) Elite",
+      "seatLimit": 35
+    },
+    {
+      "id": "COH-BLR-26",
+      "name": "Bengaluru Winter 2026 Silicon Fellows",
+      "campus": "Bengaluru Innovation HQ",
+      "track": "VLSI Physical Design & STA",
+      "startDate": "2026-12-01",
+      "seatLimit": 40,
+      "enrolledCount": 38,
+      "mentor": "R. K. Narayanan (Ample)"
+    },
+    {
+      "id": "COH-HYD-26",
+      "name": "Hyderabad Edge AI & Embedded Cohort",
+      "campus": "Hyderabad Innovation Lab",
+      "track": "Embedded Linux & RTOS",
+      "startDate": "2026-12-15",
+      "seatLimit": 35,
+      "enrolledCount": 29,
+      "mentor": "Aditya V. Reddy (Ample)"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-1794312134802",
+      "name": "Kandimalla Varun",
+      "email": "kandimalla.varun@ample.com",
+      "password": "scrypt$fcf89fed65c4e0d42458b207ef632398$6c10be21f51d737b0e9a91af26ecc02a0496bd3fd289f823c047701d7fef655d9f3b2cc5b503ce1302392febcefdcc9ebe2864c631119f1001e185bc66b42c51",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Bengaluru Innovation HQ",
+      "targetTrack": "VLSI Physical Design & STA",
+      "bio": "Physical Design Lead working on 7nm FinFET CTS & DRC closure.",
+      "githubUrl": "https://github.com/kvarun",
+      "linkedinUrl": "https://linkedin.com/in/kvarun",
+      "passportLevel": "Level 1 Foundation",
+      "enrolledCourseIds": [
+        "course-vlsi-01"
+      ],
+      "completedLessonIds": [],
+      "labHours": 0,
+      "streakDays": 1,
+      "topScore": 0,
+      "createdAt": "2026-11-10T12:02:14.802Z"
+    },
+    {
+      "id": "usr-101",
+      "name": "Varun Reddy",
+      "email": "varun.reddy@gmail.com",
+      "password": "scrypt$e47c92a6d48c991bd704886fffd9a58b$473ea9b344dbc8181ccb28c012cbf65cebb5437e946ce20527fd3430bb41cdf71413176baed12c0ef285ebf6490a934ce8f7978126f41a524506cd01d5424689",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Bengaluru Innovation HQ",
+      "targetTrack": "VLSI Physical Design & STA",
+      "bio": "Physical Design & STA engineering fellow at Ample Bengaluru. Working on sub-14nm RISC-V clock tree synthesis & PrimeTime sign-off.",
+      "githubUrl": "https://github.com/varun-reddy-vlsi",
+      "linkedinUrl": "https://linkedin.com/in/varun-reddy-pd",
+      "passportLevel": "Level 2 Sign-off",
+      "enrolledCourseIds": [
+        "course-vlsi-01",
+        "course-vlsi-02"
+      ],
+      "completedLessonIds": [
+        "les-101",
+        "les-102"
+      ],
+      "labHours": 28.5,
+      "streakDays": 12,
+      "topScore": 98,
+      "createdAt": "2026-09-01T08:00:00Z"
+    },
+    {
+      "id": "usr-admin-01",
+      "name": "Ample Administrator",
+      "email": "admin@amplesemi.com",
+      "password": "scrypt$220fe3991b60d5f708b89438f53b1a2a$e6a4ad096fff3c96b7f13a6624dc3352cf89addca0e17baf087232ff5b0dab96b46dbdc89a9dbb043cf187f326817376e640a02f25430fd3ff72a794707da775",
+      "role": "admin",
+      "avatar": "/assets/img/team.jpg",
+      "campus": "Bengaluru Innovation HQ",
+      "targetTrack": "Advanced SystemVerilog & UVM Verification",
+      "bio": "Academy Director & Technical Administrator at Ample Semiconductors. 14+ tapeouts in sub-7nm FinFET.",
+      "githubUrl": "https://github.com/ample-semiconductors",
+      "linkedinUrl": "https://linkedin.com/company/ample-semiconductors",
+      "passportLevel": "Tapeout Certified (Master Sign-off)",
+      "enrolledCourseIds": [
+        "course-vlsi-01",
+        "course-vlsi-02",
+        "course-emb-01",
+        "course-ai-01"
+      ],
+      "completedLessonIds": [
+        "les-101",
+        "les-102",
+        "uvm-les-101"
+      ],
+      "labHours": 120,
+      "streakDays": 45,
+      "topScore": 100,
+      "createdAt": "2026-01-15T08:00:00Z"
+    }
+  ],
+  "enquiries": [
+    {
+      "id": "ENQ-2026-01",
+      "studentName": "Varun Reddy",
+      "studentEmail": "varun.reddy@gmail.com",
+      "studentCampus": "Bengaluru Innovation HQ",
+      "subject": "Inquiry on Sub-14nm Clock Tree Synthesis Skew Bounds",
+      "track": "VLSI Physical Design & STA",
+      "message": "Hello Ample Team, during CTS in the SkyWater flow, my clock insertion delay is 1.2ns but clock skew between memory macro clock pins and register clocks is 85ps. Is this acceptable for the upcoming tapeout sign-off?",
+      "status": "pending",
+      "createdAt": "2026-11-10T11:20:00Z",
+      "reply": ""
+    },
+    {
+      "id": "ENQ-2026-02",
+      "studentName": "Sneha Kulkarni",
+      "studentEmail": "sneha.k@gmail.com",
+      "studentCampus": "Bengaluru Innovation HQ",
+      "subject": "UVM Sequence Arbitration in AXI Crossbar Testbench",
+      "track": "Advanced SystemVerilog & UVM Verification",
+      "message": "Could you provide guidance on setting SEQ_ARB_STRICT_FIFO vs SEQ_ARB_WEIGHTED when two virtual sequences contend for the address write phase driver?",
+      "status": "resolved",
+      "createdAt": "2026-11-09T14:45:00Z",
+      "reply": "Hi Sneha, excellent question. In commercial AXI testbenches, use SEQ_ARB_WEIGHTED with priority tags so write-response transactions do not starve under high slave latency."
+    },
+    {
+      "id": "ENQ-2026-03",
+      "studentName": "Rohan Mehra",
+      "studentEmail": "rohan.m@gmail.com",
+      "studentCampus": "Hyderabad Innovation Lab",
+      "subject": "Embedded Linux Device Tree binding for SPI Flash controller",
+      "track": "Embedded Linux Kernel & RTOS Firmware",
+      "message": "Our custom FPGA board boots U-Boot, but the kernel panics while probing the QSPI flash node in DTB. Can an instructor review my dts snippet?",
+      "status": "in_progress",
+      "createdAt": "2026-11-10T09:10:00Z",
+      "reply": "Under review by Aditya V. Reddy. Please ensure the compatible string matches jedec,spi-nor."
+    }
+  ]
+}
