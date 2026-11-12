@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, Award, Cpu, BookOpen, Search, Filter, 
-  ArrowUpRight, CheckCircle2, AlertCircle, Download, Plus, 
-  ShieldCheck, BarChart3, Clock, Sparkles, Building2, Eye, Check, X,
-  Edit, Trash2, Layers, Calendar, ChevronRight, MessageSquare, Send, ExternalLink
+  Users, Cpu, BookOpen, Search, 
+  CheckCircle2, AlertCircle, Download, Plus, 
+  ShieldCheck, BarChart3, Sparkles, Building2, Eye, Check, X,
+  Edit, Trash2, MessageSquare, Send, ExternalLink
 } from 'lucide-react';
 import type { Course } from '../types';
 import { 
@@ -24,7 +24,6 @@ interface AdminPortalProps {
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   courses = [],
-  onNavigate,
   onAddCourse,
   onUpdateCourse,
   onDeleteCourse
@@ -41,7 +40,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [cohorts, setCohorts] = useState<CohortRecord[]>([]);
   const [enquiries, setEnquiries] = useState<EnquiryRecord[]>([]);
   const [localCourses, setLocalCourses] = useState<Course[]>(courses && courses.length > 0 ? courses : []);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   // Friendly toast notification
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);

@@ -19,7 +19,7 @@ const viewFromHash = (): View => {
   return NAV_VIEWS.includes(h) ? h : 'landing';
 };
 import { COURSES_DATA } from './data/coursesData';
-import { fetchCourses, fetchCurrentUser, switchDemoUser } from './api/client';
+import { fetchCourses, fetchCurrentUser } from './api/client';
 import type { Course, UserProgress, User } from './types';
 import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 
@@ -76,6 +76,24 @@ export const App: React.FC = () => {
   });
 
   useEffect(() => {
+    const rawHash = window.location.hash || '';
+    if (rawHash.startsWith('#oauth=')) {
+      const token = decodeURIComponent(rawHash.slice('#oauth='.length));
+      localStorage.setItem('ample_token', token);
+      fetchCurrentUser().then(user => {
+        if (user) {
+          setCurrentUser(user);
+          localStorage.setItem('ample_current_user', JSON.stringify(user));
+          showToast(`Welcome, ${user.name}!`, 'success');
+          handleNavigate(user.role === 'admin' ? 'admin' : 'dashboard');
+        }
+      }).catch(() => showToast('OAuth session check failed.', 'error'));
+    } else if (rawHash.startsWith('#oauth_error=')) {
+      const msg = decodeURIComponent(rawHash.slice('#oauth_error='.length));
+      showToast(msg || 'OAuth sign-in failed.', 'error');
+      window.location.hash = 'landing';
+    }
+
     fetchCourses().then(data => {
       if (data && data.length > 0) {
         setCourses(data);
@@ -171,17 +189,6 @@ export const App: React.FC = () => {
     localStorage.removeItem('ample_token');
     handleNavigate('landing');
     showToast('Signed out of Ample LMS.', 'info');
-  };
-
-  const handleSwitchDemoRole = async (role: 'trainee' | 'admin') => {
-    const switched = await switchDemoUser(role);
-    setCurrentUser(switched);
-    showToast(
-      role === 'admin'
-        ? `Switched to Administrator: ${switched.name} (Lead Architect)`
-        : `Switched to Trainee: ${switched.name} (Silicon Fellow)`,
-      'success'
-    );
   };
 
   const handleUpdateUser = (updatedUser: User) => {

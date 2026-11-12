@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Award, BookOpen, Flame, Play,
-  ShieldCheck, Sparkles, MessageSquare, Plus, Send, CheckCircle2,
-  Layers, Check, X, Clock, HelpCircle
+  BookOpen, Flame, Play,
+  ShieldCheck, MessageSquare, Plus, Send, CheckCircle2,
+  Layers, X
 } from 'lucide-react';
 import type { Course, UserProgress, User } from '../types';
 import { fetchEnquiries, createEnquiryApi } from '../api/client';

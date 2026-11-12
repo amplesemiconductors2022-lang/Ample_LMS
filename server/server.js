@@ -4,6 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { createStore } from './services/store.js';
+import { getEmailStatus, sendEmail, escapeHtml } from './services/email.js';
+import { getMediaStatus, createCloudinarySignature } from './services/media.js';
+import { getOAuthProviders, getAuthorizeUrl, exchangeOAuthCode, verifyOAuthState, getBaseUrl } from './services/oauth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -496,54 +500,34 @@ const initialData = {
   ]
 };
 
-// Helper: Read store
-function readStore() {
-  try {
-    if (fs.existsSync(dataFilePath)) {
-      const content = fs.readFileSync(dataFilePath, 'utf8');
-      const parsed = JSON.parse(content);
-      if (parsed && Array.isArray(parsed.courses) && parsed.courses.length > 0) {
-        if (!parsed.users || !Array.isArray(parsed.users) || parsed.users.length === 0) {
-          parsed.users = initialData.users;
-          fs.writeFileSync(dataFilePath, JSON.stringify(parsed, null, 2), 'utf8');
-        }
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Error reading store file, falling back to seed:', err);
-  }
-  // If file doesn't exist or corrupted or empty, write initialData
-  fs.mkdirSync(path.dirname(dataFilePath), { recursive: true });
-  fs.writeFileSync(dataFilePath, JSON.stringify(initialData, null, 2), 'utf8');
-  return initialData;
-}
-
-// Helper: Save store
-function saveStore(data) {
-  try {
-    fs.mkdirSync(path.dirname(dataFilePath), { recursive: true });
-    const tempPath = `${dataFilePath}.tmp`;
-    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
-    fs.renameSync(tempPath, dataFilePath);
-  } catch (err) {
-    console.error('Error saving store file:', err);
-  }
-}
-
-// Ensure data folder and file initialized on startup
-readStore();
+// Storage adapter (MongoDB Atlas when MONGODB_URI is set, JSON file fallback otherwise)
+const { readStore, saveStore, getStorageMode, cloneSeed } = createStore({
+  initialData,
+  dataFilePath,
+  hashPassword,
+});
 
 // ==================== REST API ROUTES ====================
 
 // Health
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString(), platform: 'Ample Learn API' });
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    time: new Date().toISOString(),
+    platform: 'Ample Learn API',
+    storage: getStorageMode(),
+    integrations: {
+      mongodb: Boolean(process.env.MONGODB_URI),
+      email: getEmailStatus(),
+      media: getMediaStatus(),
+      oauth: getOAuthProviders(),
+    },
+  });
 });
 
 // Analytics
-app.get('/api/analytics', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/analytics', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   res.json({
     activeTrainees: data.trainees.length,
     tapeoutsVerified: data.tapeouts.filter(t => t.status === 'Approved').length,
@@ -554,9 +538,90 @@ app.get('/api/analytics', requireAdmin, (req, res) => {
 
 // ==================== AUTHENTICATION & USER PROFILES ====================
 
+// Enabled OAuth providers
+app.get('/api/auth/providers', (_req, res) => {
+  res.json(getOAuthProviders());
+});
+
+// Start OAuth 2.0 flow (Google / GitHub)
+app.get('/api/auth/oauth/:provider', (req, res) => {
+  const { provider } = req.params;
+  try {
+    const url = getAuthorizeUrl(provider, req, SESSION_SECRET);
+    res.redirect(url);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// OAuth 2.0 callback
+app.get('/api/auth/oauth/:provider/callback', async (req, res) => {
+  const { provider } = req.params;
+  const { code, state, error } = req.query;
+  const appBase = getBaseUrl(req);
+
+  if (error) {
+    return res.redirect(`${appBase}/#oauth_error=${encodeURIComponent(String(error))}`);
+  }
+  if (!code || !verifyOAuthState(String(state || ''), provider, SESSION_SECRET)) {
+    return res.redirect(`${appBase}/#oauth_error=${encodeURIComponent('Invalid or expired OAuth state.')}`);
+  }
+
+  try {
+    const profile = await exchangeOAuthCode(provider, String(code), req);
+    const data = await readStore();
+    data.users = data.users || [];
+    data.trainees = data.trainees || [];
+
+    let user = data.users.find(u => u.email.toLowerCase() === profile.email);
+    if (!user) {
+      user = {
+        id: 'usr-' + Date.now(),
+        name: profile.name,
+        email: profile.email,
+        password: hashPassword(crypto.randomBytes(18).toString('hex')),
+        role: 'trainee',
+        authProvider: profile.provider,
+        avatar: profile.avatar || '',
+        campus: 'Bengaluru Innovation HQ',
+        targetTrack: 'VLSI Physical Design & STA',
+        bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
+        githubUrl: '',
+        linkedinUrl: '',
+        passportLevel: 'Level 1 Foundation',
+        enrolledCourseIds: ['course-vlsi-01'],
+        completedLessonIds: [],
+        labHours: 0,
+        streakDays: 1,
+        topScore: 0,
+        createdAt: new Date().toISOString()
+      };
+      data.users.unshift(user);
+      data.trainees.unshift({
+        id: 'TR-' + (100 + data.trainees.length + 1),
+        name: user.name,
+        email: user.email,
+        track: user.targetTrack,
+        progress: 5,
+        labHours: 0,
+        streak: 1,
+        passportLevel: user.passportLevel,
+        interviewStatus: 'under_review',
+        topScore: 0
+      });
+      await saveStore(data);
+    }
+
+    const token = signToken(user);
+    return res.redirect(`${appBase}/#oauth=${encodeURIComponent(token)}`);
+  } catch (err) {
+    return res.redirect(`${appBase}/#oauth_error=${encodeURIComponent(err.message || 'OAuth sign-in failed.')}`);
+  }
+});
+
 // Login
-app.post('/api/auth/login', loginLimiter, (req, res) => {
-  const data = readStore();
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
+  const data = await readStore();
   const { email, password } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
@@ -582,8 +647,8 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
 });
 
 // Signup
-app.post('/api/auth/signup', loginLimiter, (req, res) => {
-  const data = readStore();
+app.post('/api/auth/signup', loginLimiter, async (req, res) => {
+  const data = await readStore();
   const { name, email, password, campus, targetTrack } = req.body;
 
   if (!name || !email) {
@@ -635,18 +700,27 @@ app.post('/api/auth/signup', loginLimiter, (req, res) => {
     topScore: 0
   });
 
-  saveStore(data);
+  await saveStore(data);
+
+  // Non-blocking welcome email via Brevo (if configured)
+  sendEmail({
+    to: newUser.email,
+    toName: newUser.name,
+    subject: 'Welcome to Ample LMS',
+    htmlContent: `<p>Hi ${escapeHtml(newUser.name)},</p><p>Your Ample LMS account for <strong>${escapeHtml(newUser.targetTrack)}</strong> is now active.</p>`,
+    textContent: `Hi ${newUser.name}, your Ample LMS account for ${newUser.targetTrack} is now active.`,
+  }).catch((err) => console.warn('[email] Welcome email failed:', err.message));
 
   const { password: _, ...userSafe } = newUser;
   res.status(201).json({
     user: userSafe,
-    token: 'ample-jwt-' + Buffer.from(newUser.id + ':' + Date.now()).toString('base64')
+    token: signToken(newUser)
   });
 });
 
 // Get current user profile
-app.get('/api/auth/me', (req, res) => {
-  const data = readStore();
+app.get('/api/auth/me', async (req, res) => {
+  const data = await readStore();
   if (!req.auth) return res.status(401).json({ error: 'Sign in required.' });
   const user = (data.users || []).find(u => u.id === req.auth.id);
 
@@ -659,8 +733,8 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // Update profile
-app.put('/api/auth/profile', requireAuth, (req, res) => {
-  const data = readStore();
+app.put('/api/auth/profile', requireAuth, async (req, res) => {
+  const data = await readStore();
   const { id, name, campus, targetTrack, bio, githubUrl, linkedinUrl, avatar } = req.body;
 
   if (!id) {
@@ -693,16 +767,16 @@ app.put('/api/auth/profile', requireAuth, (req, res) => {
     data.trainees[traineeIndex].track = data.users[index].targetTrack;
   }
 
-  saveStore(data);
+  await saveStore(data);
 
   const { password: _, ...userSafe } = data.users[index];
   res.json(userSafe);
 });
 
 // Quick switch demo user (1-click testing)
-app.post('/api/auth/switch-demo', (req, res) => {
+app.post('/api/auth/switch-demo', async (req, res) => {
   if (!DEMO_MODE) return res.status(403).json({ error: 'Disabled outside demo mode' });
-  const data = readStore();
+  const data = await readStore();
   const { role } = req.body; // 'trainee' | 'admin'
 
   const targetRole = role === 'admin' ? 'admin' : 'trainee';
@@ -720,20 +794,20 @@ app.post('/api/auth/switch-demo', (req, res) => {
 });
 
 // List all registered users
-app.get('/api/auth/users', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/auth/users', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   const safeUsers = (data.users || []).map(({ password, ...u }) => u);
   res.json(safeUsers);
 });
 
 // Courses (Tracks)
-app.get('/api/courses', (req, res) => {
-  const data = readStore();
+app.get('/api/courses', async (_req, res) => {
+  const data = await readStore();
   res.json(data.courses);
 });
 
-app.get('/api/courses/:id', (req, res) => {
-  const data = readStore();
+app.get('/api/courses/:id', async (req, res) => {
+  const data = await readStore();
   const course = data.courses.find(c => c.id === req.params.id);
   if (!course) {
     return res.status(404).json({ error: 'Course not found' });
@@ -741,8 +815,8 @@ app.get('/api/courses/:id', (req, res) => {
   res.json(course);
 });
 
-app.post('/api/courses', requireAdmin, (req, res) => {
-  const data = readStore();
+app.post('/api/courses', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const newCourse = req.body;
   if (!newCourse.id) {
     newCourse.id = 'course-' + Date.now();
@@ -754,38 +828,38 @@ app.post('/api/courses', requireAdmin, (req, res) => {
     newCourse.modules = [];
   }
   data.courses.unshift(newCourse);
-  saveStore(data);
+  await saveStore(data);
   res.status(201).json(newCourse);
 });
 
-app.put('/api/courses/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.put('/api/courses/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const { id } = req.params;
   const index = data.courses.findIndex(c => c.id === id);
   if (index === -1) {
     return res.status(404).json({ error: 'Course not found' });
   }
   data.courses[index] = { ...data.courses[index], ...req.body };
-  saveStore(data);
+  await saveStore(data);
   res.json(data.courses[index]);
 });
 
-app.delete('/api/courses/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.delete('/api/courses/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const { id } = req.params;
   data.courses = data.courses.filter(c => c.id !== id);
-  saveStore(data);
+  await saveStore(data);
   res.json({ success: true, id });
 });
 
 // Trainees
-app.get('/api/trainees', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/trainees', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   res.json(data.trainees);
 });
 
-app.get('/api/trainees/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/trainees/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const trainee = data.trainees.find(t => t.id === req.params.id);
   if (!trainee) {
     return res.status(404).json({ error: 'Trainee not found' });
@@ -793,19 +867,19 @@ app.get('/api/trainees/:id', requireAdmin, (req, res) => {
   res.json(trainee);
 });
 
-app.post('/api/trainees', requireAdmin, (req, res) => {
-  const data = readStore();
+app.post('/api/trainees', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const trainee = {
     id: 'TR-' + (100 + data.trainees.length + 1),
     ...req.body
   };
   data.trainees.unshift(trainee);
-  saveStore(data);
+  await saveStore(data);
   res.status(201).json(trainee);
 });
 
-app.patch('/api/trainees/:id/status', requireAdmin, (req, res) => {
-  const data = readStore();
+app.patch('/api/trainees/:id/status', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const { id } = req.params;
   const { interviewStatus } = req.body;
   const index = data.trainees.findIndex(t => t.id === id);
@@ -813,18 +887,18 @@ app.patch('/api/trainees/:id/status', requireAdmin, (req, res) => {
     return res.status(404).json({ error: 'Trainee not found' });
   }
   data.trainees[index].interviewStatus = interviewStatus;
-  saveStore(data);
+  await saveStore(data);
   res.json(data.trainees[index]);
 });
 
 // Tapeouts
-app.get('/api/tapeouts', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/tapeouts', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   res.json(data.tapeouts);
 });
 
-app.get('/api/tapeouts/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/tapeouts/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const tapeout = data.tapeouts.find(t => t.id === req.params.id);
   if (!tapeout) {
     return res.status(404).json({ error: 'Tapeout not found' });
@@ -832,8 +906,8 @@ app.get('/api/tapeouts/:id', requireAdmin, (req, res) => {
   res.json(tapeout);
 });
 
-app.post('/api/tapeouts', requireAdmin, (req, res) => {
-  const data = readStore();
+app.post('/api/tapeouts', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const newTapeout = {
     id: 'TAP-2026-' + (data.tapeouts.length + 1).toString().padStart(2, '0'),
     submissionDate: 'Just now',
@@ -841,12 +915,12 @@ app.post('/api/tapeouts', requireAdmin, (req, res) => {
     ...req.body
   };
   data.tapeouts.unshift(newTapeout);
-  saveStore(data);
+  await saveStore(data);
   res.status(201).json(newTapeout);
 });
 
-app.patch('/api/tapeouts/:id/status', requireAdmin, (req, res) => {
-  const data = readStore();
+app.patch('/api/tapeouts/:id/status', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const { id } = req.params;
   const { status } = req.body;
   const index = data.tapeouts.findIndex(t => t.id === id);
@@ -854,18 +928,18 @@ app.patch('/api/tapeouts/:id/status', requireAdmin, (req, res) => {
     return res.status(404).json({ error: 'Tapeout not found' });
   }
   data.tapeouts[index].status = status;
-  saveStore(data);
+  await saveStore(data);
   res.json(data.tapeouts[index]);
 });
 
 // Cohorts
-app.get('/api/cohorts', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/cohorts', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   res.json(data.cohorts);
 });
 
-app.get('/api/cohorts/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/cohorts/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const cohort = data.cohorts.find(c => c.id === req.params.id);
   if (!cohort) {
     return res.status(404).json({ error: 'Cohort not found' });
@@ -873,32 +947,32 @@ app.get('/api/cohorts/:id', requireAdmin, (req, res) => {
   res.json(cohort);
 });
 
-app.post('/api/cohorts', requireAdmin, (req, res) => {
-  const data = readStore();
+app.post('/api/cohorts', requireAdmin, async (req, res) => {
+  const data = await readStore();
   const newCohort = {
     id: 'COH-' + Date.now().toString().slice(-4),
     enrolledCount: 0,
     ...req.body
   };
   data.cohorts.unshift(newCohort);
-  saveStore(data);
+  await saveStore(data);
   res.status(201).json(newCohort);
 });
 
 // User Enquiries & Student Questions
-app.get('/api/enquiries', requireAdmin, (req, res) => {
-  const data = readStore();
+app.get('/api/enquiries', requireAdmin, async (_req, res) => {
+  const data = await readStore();
   if (!data.enquiries) {
     data.enquiries = initialData.enquiries;
-    saveStore(data);
+    await saveStore(data);
   }
   res.json(data.enquiries);
 });
 
-app.post('/api/enquiries', (req, res) => {
-  const data = readStore();
+app.post('/api/enquiries', async (req, res) => {
+  const data = await readStore();
   if (!data.enquiries) data.enquiries = [];
-  
+
   const newEnquiry = {
     id: 'ENQ-' + Date.now().toString().slice(-6),
     studentName: req.body.studentName || 'Student Trainee',
@@ -913,12 +987,12 @@ app.post('/api/enquiries', (req, res) => {
   };
 
   data.enquiries.unshift(newEnquiry);
-  saveStore(data);
+  await saveStore(data);
   res.status(201).json(newEnquiry);
 });
 
-app.put('/api/enquiries/:id/reply', requireAdmin, (req, res) => {
-  const data = readStore();
+app.put('/api/enquiries/:id/reply', requireAdmin, async (req, res) => {
+  const data = await readStore();
   if (!data.enquiries) data.enquiries = [];
   const { id } = req.params;
   const { reply, status } = req.body;
@@ -931,12 +1005,24 @@ app.put('/api/enquiries/:id/reply', requireAdmin, (req, res) => {
   data.enquiries[index].reply = reply;
   data.enquiries[index].status = status || 'resolved';
   data.enquiries[index].repliedAt = new Date().toISOString();
-  saveStore(data);
-  res.json(data.enquiries[index]);
+  await saveStore(data);
+
+  const enq = data.enquiries[index];
+  if (enq.studentEmail && reply) {
+    sendEmail({
+      to: enq.studentEmail,
+      toName: enq.studentName,
+      subject: `Re: ${enq.subject} [Ample LMS]`,
+      htmlContent: `<p>Hi ${escapeHtml(enq.studentName)},</p><p>Our faculty replied to your inquiry:</p><blockquote>${escapeHtml(reply)}</blockquote>`,
+      textContent: `Hi ${enq.studentName},\n\nOur faculty replied to your inquiry:\n${reply}`,
+    }).catch((err) => console.warn('[email] Enquiry reply notification failed:', err.message));
+  }
+
+  res.json(enq);
 });
 
-app.patch('/api/enquiries/:id/status', requireAdmin, (req, res) => {
-  const data = readStore();
+app.patch('/api/enquiries/:id/status', requireAdmin, async (req, res) => {
+  const data = await readStore();
   if (!data.enquiries) data.enquiries = [];
   const { id } = req.params;
   const { status } = req.body;
@@ -947,43 +1033,67 @@ app.patch('/api/enquiries/:id/status', requireAdmin, (req, res) => {
   }
 
   data.enquiries[index].status = status;
-  saveStore(data);
+  await saveStore(data);
   res.json(data.enquiries[index]);
 });
 
-app.delete('/api/enquiries/:id', requireAdmin, (req, res) => {
-  const data = readStore();
+app.delete('/api/enquiries/:id', requireAdmin, async (req, res) => {
+  const data = await readStore();
   if (!data.enquiries) data.enquiries = [];
   const { id } = req.params;
   data.enquiries = data.enquiries.filter(e => e.id !== id);
-  saveStore(data);
+  await saveStore(data);
   res.json({ success: true, id });
 });
 
+// Cloud Media (Cloudinary signed upload config for images & videos)
+app.get('/api/media/config', (_req, res) => {
+  res.json(getMediaStatus());
+});
+
+app.post('/api/media/sign', requireAdmin, (req, res) => {
+  try {
+    const { folder, resourceType } = req.body || {};
+    res.json(createCloudinarySignature({ folder, resourceType }));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Transactional Email test endpoint (Brevo)
+app.post('/api/email/test', requireAdmin, async (req, res) => {
+  const { to, subject, message } = req.body || {};
+  if (!to) return res.status(400).json({ error: 'Recipient email ("to") is required.' });
+  const result = await sendEmail({
+    to,
+    subject: subject || 'Ample LMS Brevo Test',
+    htmlContent: `<p>${escapeHtml(message || 'Brevo transactional email is connected to Ample LMS.')}</p>`,
+    textContent: message || 'Brevo transactional email is connected to Ample LMS.',
+  });
+  res.json(result);
+});
+
 // Reset to initial seed state
-app.post('/api/reset', requireAdmin, (req, res) => {
+app.post('/api/reset', requireAdmin, async (_req, res) => {
   if (!DEMO_MODE) return res.status(403).json({ error: 'Disabled outside demo mode' });
-  saveStore(initialData);
+  await saveStore(cloneSeed());
   res.json({ success: true, message: 'Data store reset to Ample default state' });
 });
 
-// Hash any legacy plaintext passwords in the store
-(function migratePasswords() {
-  try {
-    const data = readStore();
-    let changed = false;
-    (data.users || []).forEach(u => {
-      if (u.password && !String(u.password).startsWith('scrypt$')) { u.password = hashPassword(u.password); changed = true; }
-    });
-    if (changed) saveStore(data);
-  } catch (e) { console.warn('[auth] password migration skipped:', e.message); }
-})();
+app.use((err, _req, res, _next) => {
+  console.error('[api:error]', err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+});
 
-if (isProd && fs.existsSync(distDir)) {
+if (!process.env.VERCEL && isProd && fs.existsSync(distDir)) {
   app.use(express.static(distDir, { maxAge: '7d', index: false, setHeaders: (res, p) => { if (p.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache'); } }));
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
 }
 
-app.listen(PORT, () => {
-  console.log(`[Ample Learn Backend] REST API server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`[Ample Learn Backend] REST API server running on port ${PORT} (storage: ${getStorageMode()})`);
+  });
+}
+
+export default app;

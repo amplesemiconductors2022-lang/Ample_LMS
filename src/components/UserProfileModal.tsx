@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  X, User as UserIcon, Mail, Building2, Cpu, ShieldCheck,
-  Flame, Clock, Award, ExternalLink, Github, Linkedin,
-  Check, Save, LogOut, RefreshCw, Sparkles, Terminal
+  X, User as UserIcon, Cpu, ShieldCheck,
+  Github, Linkedin,
+  Check, Save, LogOut, RefreshCw
 } from 'lucide-react';
 import { AmpleLMSLogo } from './AmpleLMSLogo';
 import { updateUserProfile, switchDemoUser, logoutUser } from '../api/client';

@@ -10,20 +10,16 @@ interface HeaderProps {
   currentView: 'landing' | 'catalog' | 'dashboard' | 'lesson' | 'admin';
   currentUser: User | null;
   onNavigate: (view: 'landing' | 'catalog' | 'dashboard' | 'admin') => void;
-  onOpenProfile?: () => void;
   onOpenAuth: (tab?: 'signin' | 'signup') => void;
   onSignOut: () => void;
-  onSwitchDemo?: (role: 'trainee' | 'admin') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentView,
   currentUser,
   onNavigate,
-  onOpenProfile,
   onOpenAuth,
-  onSignOut,
-  onSwitchDemo
+  onSignOut
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

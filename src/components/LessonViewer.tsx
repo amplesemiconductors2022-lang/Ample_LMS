@@ -4,7 +4,7 @@ import {
   HelpCircle, ChevronRight, Check, RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import type { Course, Lesson, Module } from '../types';
+import type { Course } from '../types';
 
 interface LessonViewerProps {
   course: Course;

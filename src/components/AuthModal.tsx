@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Mail, Lock, User as UserIcon, 
   ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff
@@ -24,6 +24,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [oauthProviders, setOauthProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/auth/providers')
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => { if (data) setOauthProviders({ google: Boolean(data.google), github: Boolean(data.github) }); })
+      .catch(() => {});
+  }, [isOpen]);
 
   // Sign In Form state
   const [signInEmail, setSignInEmail] = useState('');
@@ -488,6 +497,60 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {!isLoading && <ArrowRight size={16} />}
             </button>
           </form>
+        )}
+
+        {(oauthProviders.google || oauthProviders.github) && (
+          <div style={{ marginTop: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
+              <span style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle, #e2e8f0)' }} />
+              <span>or continue with</span>
+              <span style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle, #e2e8f0)' }} />
+            </div>
+            <div style={{ display: 'flex', gap: '0.55rem' }}>
+              {oauthProviders.google && (
+                <a
+                  href="/api/auth/oauth/google"
+                  style={{
+                    flex: 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.6rem 0.9rem',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-subtle, #e2e8f0)',
+                    backgroundColor: '#ffffff',
+                    color: 'var(--navy-dark, #0f214a)',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    textDecoration: 'none'
+                  }}
+                >
+                  Google
+                </a>
+              )}
+              {oauthProviders.github && (
+                <a
+                  href="/api/auth/oauth/github"
+                  style={{
+                    flex: 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.6rem 0.9rem',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-subtle, #e2e8f0)',
+                    backgroundColor: '#ffffff',
+                    color: 'var(--navy-dark, #0f214a)',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    textDecoration: 'none'
+                  }}
+                >
+                  GitHub
+                </a>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Footer Guarantee */}
