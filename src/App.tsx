@@ -366,20 +366,10 @@ export const App: React.FC = () => {
       <main id="main" tabIndex={-1} style={{ flex: 1, outline: 'none' }}>
         <ErrorBoundary>
           {currentView === 'landing' && (
-            <>
-              <LandingHero
-                onExploreTracks={() => handleNavigate('catalog')}
-                onOpenDashboard={() => handleNavigate('dashboard')}
-              />
-              {/* Quick Catalog Preview on Landing */}
-              <div style={{ backgroundColor: 'var(--bg-secondary, #f8fafc)', paddingBottom: '3rem' }}>
-                <CourseCatalog
-                  courses={courses}
-                  onSelectCourse={handleSelectCourse}
-                  enrolledCourseIds={userProgress.enrolledCourseIds}
-                />
-              </div>
-            </>
+            <LandingHero
+              onExploreTracks={() => handleNavigate('catalog')}
+              onOpenDashboard={() => handleNavigate('dashboard')}
+            />
           )}
 
           {currentView === 'catalog' && (
