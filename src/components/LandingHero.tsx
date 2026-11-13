@@ -84,7 +84,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
             ))}
           </ul>
         </div>
+      </div>
+    </section>
 
+    {/* Key Stats Bar - White Background upon scroll */}
+    <section className="lp-stats-section" aria-label="Key Ample Statistics">
+      <div className="lp-wrap">
         <dl className="lp-stats">
           {STATS.map(([n, l]) => (
             <div key={l}><dt>{n}</dt><dd>{l}</dd></div>

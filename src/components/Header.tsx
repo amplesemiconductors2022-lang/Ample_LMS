@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      backgroundColor: 'rgba(0, 22, 37, 0.96)',
+      backgroundColor: 'rgba(6, 8, 14, 0.96)',
       backdropFilter: 'blur(12px)',
       borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
       padding: '0.85rem 1.5rem',
