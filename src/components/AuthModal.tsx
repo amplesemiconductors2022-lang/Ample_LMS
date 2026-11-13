@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Mail, Lock, User as UserIcon, 
+import {
+  X, Mail, Lock, User as UserIcon,
   ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { AmpleLMSLogo } from './AmpleLMSLogo';
@@ -31,7 +31,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     fetch('/api/auth/providers')
       .then(r => (r.ok ? r.json() : null))
       .then(data => { if (data) setOauthProviders({ google: Boolean(data.google), github: Boolean(data.github) }); })
-      .catch(() => {});
+      .catch(() => { });
   }, [isOpen]);
 
   // Sign In Form state
@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         campus: signUpCampus,
         targetTrack: signUpTrack
       });
-      onSuccess(user, `Welcome to Ample LMS, ${user.name}! Level 1 Certification activated.`);
+      onSuccess(user, `Welcome to Ample LMS, ${user.name}! Your account is now active.`);
       onClose();
     } catch (err: any) {
       setErrorMessage(err.message || 'Sign up could not be completed. Please try again.');
@@ -163,7 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </h2>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary, #475569)', maxWidth: '380px', margin: '0 auto' }}>
             {activeTab === 'signin'
-              ? 'Access semiconductor course tracks, campus cohorts, and industry certifications.'
+              ? 'Access semiconductor courses, campus cohorts, and industry certifications.'
               : 'Join the industry-standard academy mentored by practicing chip architects.'}
           </p>
         </div>

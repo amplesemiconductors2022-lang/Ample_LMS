@@ -19,9 +19,18 @@ const viewFromHash = (): View => {
   return NAV_VIEWS.includes(h) ? h : 'landing';
 };
 import { COURSES_DATA } from './data/coursesData';
-import { fetchCourses, fetchCurrentUser } from './api/client';
+import { fetchCourses, fetchCurrentUser, enrollCourseApi, completeLessonApi } from './api/client';
 import type { Course, UserProgress, User } from './types';
 import { CheckCircle2, AlertCircle, X } from 'lucide-react';
+
+const EMPTY_PROGRESS: UserProgress = {
+  enrolledCourseIds: [],
+  completedLessonIds: [],
+  quizScores: {},
+  labHours: 0,
+  streakDays: 0,
+  certificationReady: false
+};
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(viewFromHash);
@@ -128,38 +137,40 @@ export const App: React.FC = () => {
     setCourses(prev => prev.filter(c => c.id !== courseId));
   };
 
-  // User Progress state with local storage persistence
+  const [pendingCourse, setPendingCourse] = useState<Course | null>(null);
+
+  // User Progress state scoped to signed-in user and persisted to backend
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
-    const saved = localStorage.getItem('ample_learn_progress');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch { }
-    }
+    if (!currentUser) return EMPTY_PROGRESS;
     return {
-      enrolledCourseIds: ['course-vlsi-01', 'course-vlsi-02'],
-      completedLessonIds: ['les-101', 'les-102'],
-      quizScores: { 'les-103': 100 },
-      labHours: 28.5,
-      streakDays: 12,
-      certificationReady: true
+      enrolledCourseIds: currentUser.enrolledCourseIds || [],
+      completedLessonIds: currentUser.completedLessonIds || [],
+      quizScores: currentUser.quizScores || {},
+      labHours: currentUser.labHours || 0,
+      streakDays: currentUser.streakDays || 0,
+      certificationReady: (currentUser.completedLessonIds || []).length > 0
     };
   });
 
   useEffect(() => {
-    localStorage.setItem('ample_learn_progress', JSON.stringify(userProgress));
-  }, [userProgress]);
+    if (currentUser) {
+      localStorage.setItem(`ample_learn_progress_${currentUser.id}`, JSON.stringify(userProgress));
+    }
+  }, [userProgress, currentUser]);
 
-  // Sync user progress if current user changes
+  // Sync user progress when signed-in user changes
   useEffect(() => {
     if (currentUser) {
-      setUserProgress(prev => ({
-        ...prev,
-        enrolledCourseIds: currentUser.enrolledCourseIds || prev.enrolledCourseIds,
-        completedLessonIds: currentUser.completedLessonIds || prev.completedLessonIds,
-        labHours: currentUser.labHours !== undefined ? currentUser.labHours : prev.labHours,
-        streakDays: currentUser.streakDays !== undefined ? currentUser.streakDays : prev.streakDays
-      }));
+      setUserProgress({
+        enrolledCourseIds: currentUser.enrolledCourseIds || [],
+        completedLessonIds: currentUser.completedLessonIds || [],
+        quizScores: currentUser.quizScores || {},
+        labHours: currentUser.labHours || 0,
+        streakDays: currentUser.streakDays || 0,
+        certificationReady: (currentUser.completedLessonIds || []).length > 0
+      });
+    } else {
+      setUserProgress(EMPTY_PROGRESS);
     }
   }, [currentUser]);
 
@@ -167,6 +178,30 @@ export const App: React.FC = () => {
   const handleOpenAuth = (tab: 'signin' | 'signup' = 'signin') => {
     setAuthModalTab(tab);
     setIsOpenAuthModal(true);
+  };
+
+  const enrollAndOpenCourse = async (course: Course, alreadyEnrolledIds: string[]) => {
+    if (!alreadyEnrolledIds.includes(course.id)) {
+      try {
+        const res = await enrollCourseApi(course.id);
+        setCurrentUser(res.user);
+        setUserProgress(prev => ({
+          ...prev,
+          enrolledCourseIds: res.enrolledCourseIds
+        }));
+      } catch (err) {
+        console.warn('Enroll sync warning:', err);
+        setUserProgress(prev => ({
+          ...prev,
+          enrolledCourseIds: prev.enrolledCourseIds.includes(course.id)
+            ? prev.enrolledCourseIds
+            : [...prev.enrolledCourseIds, course.id]
+        }));
+      }
+    }
+    setSelectedCourse(course);
+    setCurrentView('lesson');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAuthSuccess = (user: User, message: string) => {
@@ -177,16 +212,30 @@ export const App: React.FC = () => {
     localStorage.setItem('ample_current_user', JSON.stringify(user));
     showToast(message, 'success');
     if (user.role === 'admin') {
+      setPendingCourse(null);
       handleNavigate('admin');
-    } else {
-      handleNavigate('dashboard');
+      return;
     }
+    if (pendingCourse) {
+      const targetCourse = pendingCourse;
+      setPendingCourse(null);
+      enrollAndOpenCourse(targetCourse, user.enrolledCourseIds || []);
+      return;
+    }
+    handleNavigate('dashboard');
   };
 
   const handleSignOut = () => {
-    setCurrentUser(null);
+    if (currentUser) {
+      localStorage.removeItem(`ample_learn_progress_${currentUser.id}`);
+    }
+    localStorage.removeItem('ample_learn_progress');
     localStorage.removeItem('ample_current_user');
     localStorage.removeItem('ample_token');
+    setPendingCourse(null);
+    setSelectedCourse(null);
+    setCurrentUser(null);
+    setUserProgress(EMPTY_PROGRESS);
     handleNavigate('landing');
     showToast('Signed out of Ample LMS.', 'info');
   };
@@ -198,29 +247,52 @@ export const App: React.FC = () => {
 
   // Course Handlers
   const handleSelectCourse = (course: Course) => {
-    if (!userProgress.enrolledCourseIds.includes(course.id)) {
-      setUserProgress(prev => ({
-        ...prev,
-        enrolledCourseIds: [...prev.enrolledCourseIds, course.id]
-      }));
+    if (!currentUser) {
+      setPendingCourse(course);
+      handleOpenAuth('signin');
+      showToast('Please sign in to enroll and start learning.', 'info');
+      return;
     }
-    setSelectedCourse(course);
-    setCurrentView('lesson');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentUser.role === 'admin') {
+      showToast('Sign in with a trainee account to open course lessons.', 'info');
+      return;
+    }
+    enrollAndOpenCourse(course, userProgress.enrolledCourseIds);
   };
 
-  const handleCompleteLesson = (lessonId: string) => {
+  const handleCompleteLesson = (lessonId: string, quizScore?: number) => {
     setUserProgress(prev => {
-      if (prev.completedLessonIds.includes(lessonId)) return prev;
+      const alreadyDone = prev.completedLessonIds.includes(lessonId);
+      const nextQuizScores = quizScore !== undefined
+        ? { ...prev.quizScores, [lessonId]: Math.max(prev.quizScores[lessonId] || 0, quizScore) }
+        : prev.quizScores;
+      if (alreadyDone && quizScore === undefined) return prev;
       return {
         ...prev,
-        completedLessonIds: [...prev.completedLessonIds, lessonId],
-        labHours: +(prev.labHours + 0.5).toFixed(1)
+        completedLessonIds: alreadyDone ? prev.completedLessonIds : [...prev.completedLessonIds, lessonId],
+        quizScores: nextQuizScores,
+        labHours: alreadyDone ? prev.labHours : +(prev.labHours + 0.5).toFixed(1)
       };
     });
+
+    if (currentUser) {
+      completeLessonApi(lessonId, { courseId: selectedCourse?.id, quizScore })
+        .then(res => {
+          if (res.user) {
+            setCurrentUser(res.user);
+            localStorage.setItem('ample_current_user', JSON.stringify(res.user));
+          }
+        })
+        .catch(err => console.warn('Lesson completion sync warning:', err));
+    }
   };
 
   const handleNavigate = (view: 'landing' | 'catalog' | 'dashboard' | 'admin') => {
+    if (!currentUser && view === 'dashboard') {
+      handleOpenAuth('signin');
+      showToast('Please sign in to access your Student Dashboard.', 'info');
+      return;
+    }
     const target = (currentUser?.role === 'admin' && view === 'dashboard') ? 'admin' : view;
     setCurrentView(target);
     if (window.location.hash !== `#${target}`) window.location.hash = target;
@@ -318,13 +390,21 @@ export const App: React.FC = () => {
             />
           )}
 
-          {currentView === 'dashboard' && (
+          {currentView === 'dashboard' && currentUser && currentUser.role !== 'admin' && (
             <LMSDashboard
               courses={courses}
               userProgress={userProgress}
               currentUser={currentUser}
               onOpenCourse={handleSelectCourse}
             />
+          )}
+
+          {currentView === 'dashboard' && !currentUser && (
+            <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+              <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>Sign in required</h1>
+              <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>Sign in to view your enrolled courses, lab hours, and progress.</p>
+              <button className="ample-btn-primary" onClick={() => handleOpenAuth('signin')}>Sign in</button>
+            </div>
           )}
 
           {currentView === 'admin' && currentUser?.role === 'admin' && (
@@ -347,13 +427,32 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          {currentView === 'lesson' && selectedCourse && (
+          {currentView === 'lesson' && currentUser && selectedCourse && (
             <LessonViewer
               course={selectedCourse}
               onBack={() => handleNavigate('catalog')}
               onCompleteLesson={handleCompleteLesson}
               completedLessonIds={userProgress.completedLessonIds}
             />
+          )}
+
+          {currentView === 'lesson' && (!currentUser || !selectedCourse) && (
+            <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+              <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>
+                {!currentUser ? 'Sign in required' : 'Select a course to begin'}
+              </h1>
+              <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>
+                {!currentUser
+                  ? 'Sign in with your account to access course lessons and track completion.'
+                  : 'Choose a course from the catalog to launch its lesson viewer.'}
+              </p>
+              <button
+                className="ample-btn-primary"
+                onClick={() => (!currentUser ? handleOpenAuth('signin') : handleNavigate('catalog'))}
+              >
+                {!currentUser ? 'Sign in' : 'Browse Courses'}
+              </button>
+            </div>
           )}
         </ErrorBoundary>
       </main>

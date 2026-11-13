@@ -206,7 +206,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   gap: '0.25rem'
                 }}>
                   <ShieldCheck size={11} />
-                  Level 2 Certified
+                  Ample Certified
                 </span>
               </div>
               <div style={{ fontSize: '0.82rem', opacity: 0.9, marginTop: '0.25rem' }}>
@@ -227,7 +227,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {[
             { id: 'profile', label: 'Profile Details', icon: UserIcon },
             { id: 'certification', label: 'Certification & Metrics', icon: ShieldCheck },
-            { id: 'enrolled', label: `Enrolled Tracks (${enrolledCourseObjects.length})`, icon: Cpu }
+            { id: 'enrolled', label: `Enrolled Courses (${enrolledCourseObjects.length})`, icon: Cpu }
           ].map(tab => (
             <button
               key={tab.id}
@@ -323,7 +323,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 <div>
                   <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                    Primary Specialization Track
+                    Primary Specialization Course
                   </label>
                   <select
                     value={targetTrack}
@@ -500,7 +500,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>CERTIFICATION STATUS</div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#059669', marginTop: '0.2rem' }}>
-                    Level 2 Certified
+                    Ample Certified
                   </div>
                 </div>
 
@@ -548,7 +548,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {user.name}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                    Track: {user.targetTrack} • SkyWater 130nm Sign-off Clean
+                    Course: {user.targetTrack} • SkyWater 130nm Sign-off Clean
                   </div>
                 </div>
 
@@ -573,12 +573,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           )}
 
-          {/* TAB 3: ENROLLED TRACKS */}
+          {/* TAB 3: ENROLLED COURSES */}
           {activeTab === 'enrolled' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {enrolledCourseObjects.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted, #64748b)' }}>
-                  No enrolled tracks found. Browse the course catalog to enroll!
+                  No enrolled courses found. Browse the course catalog to enroll!
                 </div>
               ) : (
                 enrolledCourseObjects.map(course => (

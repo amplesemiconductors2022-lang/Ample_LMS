@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Mail, Phone, ExternalLink } from 'lucide-react';
+import { AmpleLMSLogo } from './AmpleLMSLogo';
 
 interface FooterProps {
   onNavigate: (view: 'landing' | 'catalog' | 'dashboard' | 'admin') => void;
@@ -33,24 +34,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         }}>
           {/* Brand Column */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-              <img
-                src="/assets/img/ample-white-removebg-preview.png"
-                alt="Ample Semiconductors"
-                style={{ height: '42px', objectFit: 'contain' }}
-              />
-              <span style={{
-                fontSize: '0.72rem',
-                backgroundColor: 'var(--navy-primary, #244092)',
-                color: '#ffffff',
-                fontWeight: 800,
-                padding: '0.2rem 0.6rem',
-                borderRadius: '9999px',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                letterSpacing: '0.08em'
-              }}>
-                LEARN LMS
-              </span>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              marginBottom: '1.25rem',
+              padding: '0.45rem 0.65rem 0.45rem 1rem',
+              borderRadius: '9999px',
+              background: 'rgba(255, 255, 255, 0.07)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <AmpleLMSLogo theme="dark" variant="horizontal" size="md" />
             </div>
             <p style={{ fontSize: '0.88rem', lineHeight: 1.7, color: '#94a3b8', marginBottom: '1.25rem' }}>
               The official semiconductor learning platform by Ample Semiconductors Private Limited.
@@ -84,7 +78,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#cbd5e1')}
                 >
-                  Silicon Tracks & Syllabi
+                  Silicon Courses & Syllabi
                 </button>
               </li>
               <li>

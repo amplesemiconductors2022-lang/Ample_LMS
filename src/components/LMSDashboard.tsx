@@ -5,7 +5,7 @@ import {
   Layers, X
 } from 'lucide-react';
 import type { Course, UserProgress, User } from '../types';
-import { fetchEnquiries, createEnquiryApi } from '../api/client';
+import { fetchMyEnquiries, createEnquiryApi } from '../api/client';
 import type { EnquiryRecord } from '../api/client';
 
 interface LMSDashboardProps {
@@ -38,17 +38,16 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   };
 
   useEffect(() => {
-    fetchEnquiries().then(data => {
-      // Filter enquiries submitted by this trainee or show all relevant
-      if (currentUser?.email) {
-        const userEnqs = data.filter(e => e.studentEmail.toLowerCase() === currentUser.email.toLowerCase());
-        setEnquiries(userEnqs.length > 0 ? userEnqs : data.slice(0, 2));
-      } else {
-        setEnquiries(data.slice(0, 2));
-      }
-    }).catch(err => {
-      console.warn('Failed to load enquiries:', err);
-    });
+    if (!currentUser) {
+      setEnquiries([]);
+      return;
+    }
+    fetchMyEnquiries()
+      .then(data => setEnquiries(data))
+      .catch(err => {
+        console.warn('Failed to load enquiries:', err);
+        setEnquiries([]);
+      });
   }, [currentUser]);
 
   const handleSubmitEnquiry = async (e: React.FormEvent) => {
@@ -61,9 +60,6 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
     setIsSubmittingEnquiry(true);
     try {
       const created = await createEnquiryApi({
-        studentName: currentUser?.name || 'Varun Reddy',
-        studentEmail: currentUser?.email || 'varun.reddy@gmail.com',
-        studentCampus: currentUser?.campus || 'Bengaluru Innovation HQ',
         subject: subject.trim(),
         track: selectedTrack,
         message: message.trim()
@@ -74,8 +70,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
       setSubject('');
       setMessage('');
       showToast('Your technical question has been submitted to Ample faculty mentors!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to submit enquiry:', err);
+      showToast(err?.message || 'Could not submit inquiry. Please sign in and try again.');
     } finally {
       setIsSubmittingEnquiry(false);
     }
@@ -139,7 +136,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
             Welcome back, {currentUser?.name?.split(' ')[0] || 'Varun'}!
           </h1>
           <p style={{ color: 'var(--text-secondary, #475569)', fontSize: '0.94rem', maxWidth: '640px' }}>
-            You are enrolled in the <strong>{currentUser?.targetTrack || 'ASIC Tapeout & Physical Design Track'}</strong>. Complete your active curriculum modules to prepare for technical interview fast-tracking.
+            You are enrolled in the <strong>{currentUser?.targetTrack || 'ASIC Tapeout & Physical Design Course'}</strong>. Complete your active curriculum modules to prepare for technical interview fast-tracking.
           </p>
         </div>
 
@@ -152,7 +149,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
             className="ample-btn-primary"
           >
             <Play size={16} />
-            Resume Active Track
+            Resume Active Course
           </button>
 
           <button
@@ -227,10 +224,10 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           </div>
         </div>
 
-        {/* Metric 4: Enrolled Tracks */}
+        {/* Metric 4: Enrolled Courses */}
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>ACTIVE TRACKS</span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>ACTIVE COURSES</span>
             <Layers size={18} color="#7c3aed" />
           </div>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#7c3aed' }}>
@@ -249,7 +246,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)' }}>
-              Your Enrolled Silicon Tracks
+              Your Enrolled Silicon Courses
             </h2>
             <span style={{ fontSize: '0.82rem', color: 'var(--navy-primary, #244092)', fontWeight: 600 }}>
               {enrolledCourses.length} Active Courses
@@ -288,7 +285,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                           {course.category}
                         </span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
-                          {course.level} • {course.duration}
+                          {course.duration}
                         </span>
                       </div>
                       <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', lineHeight: 1.3 }}>
@@ -541,7 +538,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
             <form onSubmit={handleSubmitEnquiry} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
-                  Related Silicon Track
+                  Related Silicon Course
                 </label>
                 <select
                   value={selectedTrack}

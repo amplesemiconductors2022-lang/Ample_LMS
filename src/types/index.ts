@@ -36,7 +36,7 @@ export interface Course {
   title: string;
   slug: string;
   category: 'VLSI' | 'Embedded' | 'AI/ML';
-  level: Level;
+  level?: Level;
   duration: string;
   lessonsCount: number;
   rating: number;
@@ -89,6 +89,7 @@ export interface User {
   passportLevel?: string;
   enrolledCourseIds: string[];
   completedLessonIds: string[];
+  quizScores?: Record<string, number>;
   labHours: number;
   streakDays: number;
   topScore: number;

@@ -23,7 +23,7 @@ export const DEFAULT_USER: User = {
   bio: 'Physical Design & STA engineering fellow at Ample Bengaluru. Working on sub-14nm RISC-V clock tree synthesis & PrimeTime sign-off.',
   githubUrl: 'https://github.com/varun-reddy-vlsi',
   linkedinUrl: 'https://linkedin.com/in/varun-reddy-pd',
-  passportLevel: 'Level 2 Sign-off',
+  passportLevel: 'Verified Trainee',
   enrolledCourseIds: ['course-vlsi-01', 'course-vlsi-02'],
   completedLessonIds: ['les-101', 'les-102'],
   labHours: 28.5,
@@ -210,7 +210,7 @@ export async function fetchTrainees(): Promise<TraineeRecord[]> {
       progress: 92,
       labHours: 28.5,
       streak: 12,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'eligible',
       topScore: 98
     },
@@ -222,7 +222,7 @@ export async function fetchTrainees(): Promise<TraineeRecord[]> {
       progress: 88,
       labHours: 24.0,
       streak: 15,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'referred',
       topScore: 95
     },
@@ -246,7 +246,7 @@ export async function fetchTrainees(): Promise<TraineeRecord[]> {
       progress: 74,
       labHours: 18.5,
       streak: 8,
-      passportLevel: 'Level 1 Foundation',
+      passportLevel: 'Enrolled Trainee',
       interviewStatus: 'under_review',
       topScore: 89
     },
@@ -258,7 +258,7 @@ export async function fetchTrainees(): Promise<TraineeRecord[]> {
       progress: 95,
       labHours: 31.0,
       streak: 21,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'eligible',
       topScore: 96
     }
@@ -421,13 +421,20 @@ export async function createCohortApi(cohort: Omit<CohortRecord, 'id' | 'enrolle
 export async function fetchCurrentUser(): Promise<User | null> {
   const localSaved = getLocalFallback<User | null>('current_user', null);
   const token = localStorage.getItem('ample_token');
-  if (!token && !localSaved) return null;
+  if (!token) {
+    localStorage.removeItem('ample_current_user');
+    return null;
+  }
   try {
     const res = await fetch(`${API_BASE}/auth/me`, { headers: authHeaders(false) });
     if (res.ok) {
       const user = await res.json();
       setLocalFallback('current_user', user);
       return user;
+    }
+    if (res.status === 401 || res.status === 404) {
+      logoutUser();
+      return null;
     }
   } catch (err) {
     console.warn('Backend unavailable, using cached profile:', err);
@@ -436,32 +443,19 @@ export async function fetchCurrentUser(): Promise<User | null> {
 }
 
 export async function loginUser(email: string, password?: string): Promise<{ user: User; token: string }> {
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({ email, password })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setLocalFallback('current_user', data.user);
-      if (data.token) localStorage.setItem('ample_token', data.token);
-      return data;
-    } else {
-      const err = await res.json();
-      throw new Error(err.error || 'Authentication failed');
-    }
-  } catch (err: any) {
-    // Offline / fallback login
-    const clean = email.toLowerCase().trim();
-    if (clean.includes('admin') || clean === 'admin@amplesemi.com') {
-      setLocalFallback('current_user', ADMIN_DEMO_USER);
-      return { user: ADMIN_DEMO_USER, token: 'ample-demo-admin-token' };
-    }
-    const trainee = { ...DEFAULT_USER, email: clean };
-    setLocalFallback('current_user', trainee);
-    return { user: trainee, token: 'ample-demo-trainee-token' };
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ email, password })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Authentication failed');
   }
+  const data = await res.json();
+  setLocalFallback('current_user', data.user);
+  if (data.token) localStorage.setItem('ample_token', data.token);
+  return data;
 }
 
 export async function signupUser(userData: {
@@ -471,45 +465,60 @@ export async function signupUser(userData: {
   campus?: string;
   targetTrack?: string;
 }): Promise<{ user: User; token: string }> {
-  try {
-    const res = await fetch(`${API_BASE}/auth/signup`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify(userData)
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setLocalFallback('current_user', data.user);
-      if (data.token) localStorage.setItem('ample_token', data.token);
-      return data;
-    } else {
-      const err = await res.json();
-      throw new Error(err.error || 'Sign up failed');
-    }
-  } catch (err: any) {
-    // Local fallback signup
-    const newUser: User = {
-      id: 'usr-' + Date.now(),
-      name: userData.name,
-      email: userData.email,
-      role: 'trainee',
-      avatar: '',
-      campus: userData.campus || 'Bengaluru Innovation HQ',
-      targetTrack: userData.targetTrack || 'VLSI Physical Design & STA',
-      bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
-      githubUrl: '',
-      linkedinUrl: '',
-      passportLevel: 'Level 1 Foundation',
-      enrolledCourseIds: ['course-vlsi-01'],
-      completedLessonIds: [],
-      labHours: 0,
-      streakDays: 1,
-      topScore: 0,
-      createdAt: new Date().toISOString()
-    };
-    setLocalFallback('current_user', newUser);
-    return { user: newUser, token: 'ample-local-token' };
+  const res = await fetch(`${API_BASE}/auth/signup`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(userData)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Sign up failed');
   }
+  const data = await res.json();
+  setLocalFallback('current_user', data.user);
+  if (data.token) localStorage.setItem('ample_token', data.token);
+  return data;
+}
+
+export interface ProgressSyncResponse {
+  user: User;
+  enrolledCourseIds: string[];
+  completedLessonIds: string[];
+  quizScores: Record<string, number>;
+  labHours: number;
+  streakDays: number;
+}
+
+export async function enrollCourseApi(courseId: string): Promise<ProgressSyncResponse> {
+  const res = await fetch(`${API_BASE}/courses/${encodeURIComponent(courseId)}/enroll`, {
+    method: 'POST',
+    headers: authHeaders(false)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to enroll in course');
+  }
+  const data: ProgressSyncResponse = await res.json();
+  if (data.user) setLocalFallback('current_user', data.user);
+  return data;
+}
+
+export async function completeLessonApi(
+  lessonId: string,
+  payload?: { courseId?: string; quizScore?: number }
+): Promise<ProgressSyncResponse> {
+  const res = await fetch(`${API_BASE}/progress/lessons/${encodeURIComponent(lessonId)}/complete`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload || {})
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to save lesson progress');
+  }
+  const data: ProgressSyncResponse = await res.json();
+  if (data.user) setLocalFallback('current_user', data.user);
+  return data;
 }
 
 export async function updateUserProfile(updates: Partial<User> & { id: string }): Promise<User> {
@@ -601,6 +610,19 @@ export const INITIAL_ENQUIRIES: EnquiryRecord[] = [
   }
 ];
 
+export async function fetchMyEnquiries(): Promise<EnquiryRecord[]> {
+  try {
+    const res = await fetch(`${API_BASE}/enquiries/mine`, { headers: authHeaders(false) });
+    if (res.ok) {
+      return await res.json();
+    }
+    return [];
+  } catch (err) {
+    console.warn('Backend fetchMyEnquiries failed:', err);
+    return [];
+  }
+}
+
 export async function fetchEnquiries(): Promise<EnquiryRecord[]> {
   try {
     const res = await fetch(`${API_BASE}/enquiries`, { headers: authHeaders(false) });
@@ -609,40 +631,24 @@ export async function fetchEnquiries(): Promise<EnquiryRecord[]> {
       setLocalFallback('enquiries', data);
       return data;
     }
+    return [];
   } catch (err) {
-    console.warn('Backend fetchEnquiries failed, fallback to local:', err);
+    console.warn('Backend fetchEnquiries failed:', err);
+    return [];
   }
-  return getLocalFallback<EnquiryRecord[]>('enquiries', INITIAL_ENQUIRIES);
 }
 
 export async function createEnquiryApi(data: Partial<EnquiryRecord>): Promise<EnquiryRecord> {
-  try {
-    const res = await fetch(`${API_BASE}/enquiries`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify(data)
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    console.warn('Backend createEnquiryApi failed:', err);
+  const res = await fetch(`${API_BASE}/enquiries`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to submit enquiry');
   }
-  const fallbackItem: EnquiryRecord = {
-    id: 'ENQ-' + Date.now().toString().slice(-6),
-    studentName: data.studentName || 'Student Trainee',
-    studentEmail: data.studentEmail || 'student@ample.com',
-    studentCampus: data.studentCampus || 'Bengaluru Innovation HQ',
-    subject: data.subject || 'Course Question',
-    track: data.track || 'VLSI Physical Design & STA',
-    message: data.message || '',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    reply: ''
-  };
-  const list = getLocalFallback<EnquiryRecord[]>('enquiries', INITIAL_ENQUIRIES);
-  setLocalFallback('enquiries', [fallbackItem, ...list]);
-  return fallbackItem;
+  return await res.json();
 }
 
 export async function replyEnquiryApi(id: string, reply: string, status: 'resolved' | 'in_progress' = 'resolved'): Promise<EnquiryRecord> {

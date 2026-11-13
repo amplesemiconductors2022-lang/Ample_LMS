@@ -227,6 +227,18 @@
   ],
   "trainees": [
     {
+      "id": "TR-107",
+      "name": "example",
+      "email": "example@gmail.com",
+      "track": "VLSI Physical Design & STA",
+      "progress": 5,
+      "labHours": 0,
+      "streak": 1,
+      "passportLevel": "Enrolled Trainee",
+      "interviewStatus": "under_review",
+      "topScore": 0
+    },
+    {
       "id": "TR-106",
       "name": "Kandimalla Varun",
       "email": "kandimalla.varun@ample.com",
@@ -234,7 +246,7 @@
       "progress": 5,
       "labHours": 0,
       "streak": 1,
-      "passportLevel": "Level 1 Foundation",
+      "passportLevel": "Enrolled Trainee",
       "interviewStatus": "under_review",
       "topScore": 0
     },
@@ -243,10 +255,10 @@
       "name": "Varun Reddy",
       "email": "varun.reddy@gmail.com",
       "track": "VLSI Physical Design & STA",
-      "progress": 92,
+      "progress": 67,
       "labHours": 28.5,
       "streak": 12,
-      "passportLevel": "Level 2 Sign-off",
+      "passportLevel": "Verified Trainee",
       "interviewStatus": "referred",
       "topScore": 98
     },
@@ -258,7 +270,7 @@
       "progress": 88,
       "labHours": 24,
       "streak": 15,
-      "passportLevel": "Level 2 Sign-off",
+      "passportLevel": "Verified Trainee",
       "interviewStatus": "referred",
       "topScore": 95
     },
@@ -282,7 +294,7 @@
       "progress": 74,
       "labHours": 18.5,
       "streak": 8,
-      "passportLevel": "Level 1 Foundation",
+      "passportLevel": "Enrolled Trainee",
       "interviewStatus": "under_review",
       "topScore": 89
     },
@@ -294,7 +306,7 @@
       "progress": 95,
       "labHours": 31,
       "streak": 21,
-      "passportLevel": "Level 2 Sign-off",
+      "passportLevel": "Verified Trainee",
       "interviewStatus": "eligible",
       "topScore": 96
     }
@@ -381,6 +393,28 @@
   ],
   "users": [
     {
+      "id": "usr-1794471699572",
+      "name": "example",
+      "email": "example@gmail.com",
+      "password": "scrypt$60f7ecd0b3aceda6387bd7c729bd7c89$ffcfb788b39820f6bf624fb9a3c5317f28036ec08b8cd3ad4795c1d1b7a1ca6a3b25392677936d7702c2c80694e1346ad689118b5a65b8c77d9f79926ff493c5",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Bengaluru Innovation HQ",
+      "targetTrack": "VLSI Physical Design & STA",
+      "bio": "Semiconductor engineering trainee at Ample Semiconductors Academy.",
+      "githubUrl": "",
+      "linkedinUrl": "",
+      "passportLevel": "Enrolled Trainee",
+      "enrolledCourseIds": [
+        "course-vlsi-01"
+      ],
+      "completedLessonIds": [],
+      "labHours": 0,
+      "streakDays": 1,
+      "topScore": 0,
+      "createdAt": "2026-11-12T08:21:39.707Z"
+    },
+    {
       "id": "usr-1794312134802",
       "name": "Kandimalla Varun",
       "email": "kandimalla.varun@ample.com",
@@ -392,7 +426,7 @@
       "bio": "Physical Design Lead working on 7nm FinFET CTS & DRC closure.",
       "githubUrl": "https://github.com/kvarun",
       "linkedinUrl": "https://linkedin.com/in/kvarun",
-      "passportLevel": "Level 1 Foundation",
+      "passportLevel": "Enrolled Trainee",
       "enrolledCourseIds": [
         "course-vlsi-01"
       ],
@@ -414,7 +448,7 @@
       "bio": "Physical Design & STA engineering fellow at Ample Bengaluru. Working on sub-14nm RISC-V clock tree synthesis & PrimeTime sign-off.",
       "githubUrl": "https://github.com/varun-reddy-vlsi",
       "linkedinUrl": "https://linkedin.com/in/varun-reddy-pd",
-      "passportLevel": "Level 2 Sign-off",
+      "passportLevel": "Verified Trainee",
       "enrolledCourseIds": [
         "course-vlsi-01",
         "course-vlsi-02"
@@ -426,7 +460,8 @@
       "labHours": 28.5,
       "streakDays": 12,
       "topScore": 98,
-      "createdAt": "2026-09-01T08:00:00Z"
+      "createdAt": "2026-09-01T08:00:00Z",
+      "quizScores": {}
     },
     {
       "id": "usr-admin-01",

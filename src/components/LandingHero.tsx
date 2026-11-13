@@ -41,12 +41,25 @@ const STATS = [
 export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpenDashboard }) => (
   <>
     <section className="lp-hero" aria-labelledby="hero-title">
+      <video
+        className="lp-hero-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster="/assets/img/bg-chip.jpg"
+        aria-hidden="true"
+        tabIndex={-1}
+      >
+        <source src="/assets/img/bg-video.mp4" type="video/mp4" />
+      </video>
       <div className="lp-wrap">
         <div className="lp-hero-grid">
           <div>
             <h1 id="hero-title">Learn chip design and embedded systems from the architects who ship silicon.</h1>
             <p className="lead">
-              Practical tracks from Ample Semiconductors: synthesizable RTL, verification, timing closure,
+              Practical courses from Ample Semiconductors: synthesizable RTL, verification, timing closure,
               firmware and Edge AI, with lab work that mirrors real tapeouts.
             </p>
             <div className="lp-actions">
@@ -59,7 +72,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
             </div>
           </div>
 
-          <ul className="lp-tracks" aria-label="Learning tracks">
+          <ul className="lp-tracks" aria-label="Learning courses">
             {TRACKS.map(t => (
               <li key={t.title}>
                 <button className="lp-track" onClick={onExploreTracks}>
@@ -82,7 +95,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
 
     <section className="lp-section" aria-labelledby="disc-title">
       <h2 id="disc-title">Three disciplines, one hands-on curriculum</h2>
-      <p>Each track is built around Ample Semiconductors' core services: ASIC design, embedded firmware and Edge AI.</p>
+      <p>Each course is built around Ample Semiconductors' core services: ASIC design, embedded firmware and Edge AI.</p>
       <div className="lp-disc">
         {TRACKS.map(t => (
           <article key={t.title}>

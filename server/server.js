@@ -305,7 +305,7 @@ const initialData = {
       progress: 92,
       labHours: 28.5,
       streak: 12,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'eligible',
       topScore: 98
     },
@@ -317,7 +317,7 @@ const initialData = {
       progress: 88,
       labHours: 24.0,
       streak: 15,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'referred',
       topScore: 95
     },
@@ -341,7 +341,7 @@ const initialData = {
       progress: 74,
       labHours: 18.5,
       streak: 8,
-      passportLevel: 'Level 1 Foundation',
+      passportLevel: 'Enrolled Trainee',
       interviewStatus: 'under_review',
       topScore: 89
     },
@@ -353,7 +353,7 @@ const initialData = {
       progress: 95,
       labHours: 31.0,
       streak: 21,
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       interviewStatus: 'eligible',
       topScore: 96
     }
@@ -469,7 +469,7 @@ const initialData = {
       bio: 'Physical Design & STA engineering fellow at Ample Bengaluru. Working on sub-14nm RISC-V clock tree synthesis & PrimeTime sign-off.',
       githubUrl: 'https://github.com/varun-reddy-vlsi',
       linkedinUrl: 'https://linkedin.com/in/varun-reddy-pd',
-      passportLevel: 'Level 2 Sign-off',
+      passportLevel: 'Verified Trainee',
       enrolledCourseIds: ['course-vlsi-01', 'course-vlsi-02'],
       completedLessonIds: ['les-101', 'les-102'],
       labHours: 28.5,
@@ -588,7 +588,7 @@ app.get('/api/auth/oauth/:provider/callback', async (req, res) => {
         bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
         githubUrl: '',
         linkedinUrl: '',
-        passportLevel: 'Level 1 Foundation',
+        passportLevel: 'Enrolled Trainee',
         enrolledCourseIds: ['course-vlsi-01'],
         completedLessonIds: [],
         labHours: 0,
@@ -673,7 +673,7 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
     bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
     githubUrl: '',
     linkedinUrl: '',
-    passportLevel: 'Level 1 Foundation',
+    passportLevel: 'Enrolled Trainee',
     enrolledCourseIds: ['course-vlsi-01'],
     completedLessonIds: [],
     labHours: 0,
@@ -852,6 +852,109 @@ app.delete('/api/courses/:id', requireAdmin, async (req, res) => {
   res.json({ success: true, id });
 });
 
+// Enroll authenticated user in a course
+app.post('/api/courses/:id/enroll', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const { id } = req.params;
+  const course = (data.courses || []).find(c => c.id === id);
+  if (!course) {
+    return res.status(404).json({ error: 'Course not found' });
+  }
+
+  const userIndex = (data.users || []).findIndex(u => u.id === req.auth.id);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const user = data.users[userIndex];
+  user.enrolledCourseIds = Array.isArray(user.enrolledCourseIds) ? user.enrolledCourseIds : [];
+  if (!user.enrolledCourseIds.includes(id)) {
+    user.enrolledCourseIds.push(id);
+    course.enrolledCount = (course.enrolledCount || 0) + 1;
+    await saveStore(data);
+  }
+
+  const { password: _, ...userSafe } = user;
+  res.json({
+    user: userSafe,
+    enrolledCourseIds: user.enrolledCourseIds,
+    completedLessonIds: user.completedLessonIds || [],
+    quizScores: user.quizScores || {},
+    labHours: user.labHours || 0,
+    streakDays: user.streakDays || 1
+  });
+});
+
+// Mark a lesson complete & persist progress/quiz score
+app.post('/api/progress/lessons/:lessonId/complete', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const { lessonId } = req.params;
+  const { quizScore } = req.body || {};
+
+  const userIndex = (data.users || []).findIndex(u => u.id === req.auth.id);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const user = data.users[userIndex];
+  user.completedLessonIds = Array.isArray(user.completedLessonIds) ? user.completedLessonIds : [];
+  user.quizScores = user.quizScores && typeof user.quizScores === 'object' ? user.quizScores : {};
+
+  let changed = false;
+  if (!user.completedLessonIds.includes(lessonId)) {
+    user.completedLessonIds.push(lessonId);
+    user.labHours = +((user.labHours || 0) + 0.5).toFixed(1);
+    changed = true;
+  }
+
+  if (typeof quizScore === 'number' && !Number.isNaN(quizScore)) {
+    const prevScore = user.quizScores[lessonId] || 0;
+    if (quizScore >= prevScore) {
+      user.quizScores[lessonId] = quizScore;
+      changed = true;
+    }
+    if (quizScore > (user.topScore || 0)) {
+      user.topScore = quizScore;
+      changed = true;
+    }
+  }
+
+  // Sync progress metrics to matching trainee record
+  const traineeIndex = (data.trainees || []).findIndex(
+    t => t.email.toLowerCase() === user.email.toLowerCase()
+  );
+  if (traineeIndex !== -1) {
+    const enrolledCourses = (data.courses || []).filter(c =>
+      (user.enrolledCourseIds || []).includes(c.id)
+    );
+    const totalLessons = enrolledCourses.reduce(
+      (sum, c) => sum + (c.modules || []).reduce((mSum, m) => mSum + (m.lessons || []).length, 0),
+      0
+    );
+    const completedCount = user.completedLessonIds.length;
+    data.trainees[traineeIndex].labHours = user.labHours || 0;
+    data.trainees[traineeIndex].topScore = user.topScore || data.trainees[traineeIndex].topScore || 0;
+    if (totalLessons > 0) {
+      data.trainees[traineeIndex].progress = Math.min(100, Math.round((completedCount / totalLessons) * 100));
+    }
+    changed = true;
+  }
+
+  if (changed) {
+    await saveStore(data);
+  }
+
+  const { password: _, ...userSafe } = user;
+  res.json({
+    user: userSafe,
+    enrolledCourseIds: user.enrolledCourseIds || [],
+    completedLessonIds: user.completedLessonIds,
+    quizScores: user.quizScores,
+    labHours: user.labHours || 0,
+    streakDays: user.streakDays || 1
+  });
+});
+
 // Trainees
 app.get('/api/trainees', requireAdmin, async (_req, res) => {
   const data = await readStore();
@@ -960,6 +1063,18 @@ app.post('/api/cohorts', requireAdmin, async (req, res) => {
 });
 
 // User Enquiries & Student Questions
+app.get('/api/enquiries/mine', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const user = (data.users || []).find(u => u.id === req.auth.id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  const list = (data.enquiries || []).filter(
+    e => e.studentId === user.id || (e.studentEmail && e.studentEmail.toLowerCase() === user.email.toLowerCase())
+  );
+  res.json(list);
+});
+
 app.get('/api/enquiries', requireAdmin, async (_req, res) => {
   const data = await readStore();
   if (!data.enquiries) {
@@ -969,18 +1084,30 @@ app.get('/api/enquiries', requireAdmin, async (_req, res) => {
   res.json(data.enquiries);
 });
 
-app.post('/api/enquiries', async (req, res) => {
+app.post('/api/enquiries', requireAuth, async (req, res) => {
   const data = await readStore();
   if (!data.enquiries) data.enquiries = [];
 
+  const user = (data.users || []).find(u => u.id === req.auth.id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const subject = String(req.body?.subject || '').trim();
+  const message = String(req.body?.message || '').trim();
+  if (!subject || !message) {
+    return res.status(400).json({ error: 'Subject and message are required.' });
+  }
+
   const newEnquiry = {
     id: 'ENQ-' + Date.now().toString().slice(-6),
-    studentName: req.body.studentName || 'Student Trainee',
-    studentEmail: req.body.studentEmail || 'student@ample.com',
-    studentCampus: req.body.studentCampus || 'Bengaluru Innovation HQ',
-    subject: req.body.subject || 'General Inquiry',
-    track: req.body.track || 'VLSI Physical Design & STA',
-    message: req.body.message || '',
+    studentId: user.id,
+    studentName: user.name,
+    studentEmail: user.email,
+    studentCampus: user.campus || 'Bengaluru Innovation HQ',
+    subject,
+    track: req.body.track || user.targetTrack || 'VLSI Physical Design & STA',
+    message,
     status: 'pending',
     createdAt: new Date().toISOString(),
     reply: ''

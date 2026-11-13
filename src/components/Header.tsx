@@ -179,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
                         borderRadius: '9999px',
                         border: currentUser.role === 'admin' ? '1px solid #bfdbfe' : '1px solid #a7f3d0'
                       }}>
-                        {currentUser.role === 'admin' ? 'Administrator' : 'Verified Level 2 Sign-off'}
+                        {currentUser.role === 'admin' ? 'Administrator' : 'Verified Student'}
                       </span>
                     </div>
                   </div>

@@ -9,7 +9,7 @@ import type { Course } from '../types';
 interface LessonViewerProps {
   course: Course;
   onBack: () => void;
-  onCompleteLesson: (lessonId: string) => void;
+  onCompleteLesson: (lessonId: string, quizScore?: number) => void;
   completedLessonIds: string[];
 }
 
@@ -40,6 +40,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
     setQuizSubmitted(true);
     const questions = activeLesson.content.quiz || [];
     const correctCount = questions.filter(q => selectedAnswers[q.id] === q.correctIndex).length;
+    const scorePct = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
 
     if (correctCount === questions.length && questions.length > 0) {
       confetti({
@@ -47,7 +48,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         spread: 70,
         origin: { y: 0.6 }
       });
-      onCompleteLesson(activeLesson.id);
+      onCompleteLesson(activeLesson.id, scorePct);
     }
   };
 
@@ -150,7 +151,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               {course.title}
             </h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--navy-primary)', fontWeight: 600 }}>
-              {course.category} • {course.level}
+              {course.category}
             </span>
           </div>
 

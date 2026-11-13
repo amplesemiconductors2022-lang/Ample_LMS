@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, Cpu, BookOpen, Search, 
-  CheckCircle2, AlertCircle, Download, Plus, 
+import {
+  Users, Cpu, BookOpen, Search,
+  CheckCircle2, AlertCircle, Download, Plus,
   ShieldCheck, BarChart3, Sparkles, Building2, Eye, Check, X,
   Edit, Trash2, MessageSquare, Send, ExternalLink
 } from 'lucide-react';
 import type { Course } from '../types';
-import { 
-  fetchTrainees, updateTraineeStatusApi, 
-  fetchTapeouts, updateTapeoutStatusApi, 
+import {
+  fetchTrainees, updateTraineeStatusApi,
+  fetchTapeouts, updateTapeoutStatusApi,
   fetchCohorts, createCohortApi, createCourseApi, updateCourseApi, deleteCourseApi,
   fetchCourses, fetchEnquiries, replyEnquiryApi, updateEnquiryStatusApi, deleteEnquiryApi
 } from '../api/client';
@@ -69,7 +69,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [trackForm, setTrackForm] = useState({
     title: '',
     category: 'VLSI' as 'VLSI' | 'Embedded' | 'AI/ML',
-    level: 'Advanced' as any,
     duration: '12 Weeks (90 hrs)',
     targetRole: 'Physical Design Engineer',
     instructorName: 'Dr. Sameer Joshi',
@@ -171,11 +170,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (inspectingTapeout && inspectingTapeout.id === tapeoutId) {
       setInspectingTapeout({ ...inspectingTapeout, status: 'Approved' });
     }
-    showToast('Tapeout approved! Level 2+ Tapeout Certification issued to the candidate.', 'success');
+    showToast('Tapeout approved! Tapeout Certification issued to the candidate.', 'success');
   };
 
   const handleExportCSV = () => {
-    const headers = ['ID', 'Name', 'Email', 'Track', 'Progress(%)', 'Lab Hours', 'Streak(Days)', 'Certification Level', 'Interview Status', 'Score(%)'];
+    const headers = ['ID', 'Name', 'Email', 'Course', 'Progress(%)', 'Lab Hours', 'Streak(Days)', 'Certification Status', 'Interview Status', 'Score(%)'];
     const rows = trainees.map(t => [
       t.id,
       `"${t.name}"`,
@@ -213,7 +212,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       title: trackForm.title.trim(),
       slug: trackForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       category: trackForm.category,
-      level: trackForm.level,
       duration: trackForm.duration,
       lessonsCount: 18,
       rating: 5.0,
@@ -265,7 +263,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setTrackForm({
       title: '',
       category: 'VLSI',
-      level: 'Advanced',
       duration: '12 Weeks (90 hrs)',
       targetRole: 'Physical Design Engineer',
       instructorName: 'Dr. Sameer Joshi',
@@ -275,7 +272,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       initialLessonTitle: 'Introduction to Modern Silicon Architecture',
       sampleCode: `// Synthesizable RTL Definition\nmodule custom_ip_core (\n    input clk,\n    input rst_n,\n    output [7:0] data_out\n);\n    // Implementation\nendmodule`
     });
-    showToast(`Track "${saved.title}" published successfully live across Ample Learn!`, 'success');
+    showToast(`Course "${saved.title}" published successfully live across Ample Learn!`, 'success');
   };
 
   const handleCreateCohortSubmit = async (e: React.FormEvent) => {
@@ -307,21 +304,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   const handleDeleteCourse = async (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to delete track "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to delete course "${title}"?`)) {
       await deleteCourseApi(id);
       setLocalCourses(prev => prev.filter(c => c.id !== id));
       if (onDeleteCourse) {
         onDeleteCourse(id);
       }
-      showToast(`Track "${title}" removed from catalog.`, 'info');
+      showToast(`Course "${title}" removed from catalog.`, 'info');
     }
   };
 
   const filteredTrainees = trainees.filter(t => {
     const matchesTrack = trackFilter === 'All' || t.track.includes(trackFilter);
     const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.track.toLowerCase().includes(searchQuery.toLowerCase());
+      t.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.track.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTrack && matchesSearch;
   });
 
@@ -433,7 +430,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             className="ample-btn-primary"
           >
             <Plus size={16} />
-            Add New Track
+            Add New Course
           </button>
 
           <button
@@ -514,7 +511,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>ACTIVE TRACKS</span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>ACTIVE COURSES</span>
             <BookOpen size={18} color="var(--navy-primary)" />
           </div>
           <div style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--navy-primary)' }}>
@@ -541,7 +538,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         {[
           { id: 'overview', label: 'Overview & Insights', icon: BarChart3 },
           { id: 'enquiries', label: `Student Inquiries (${enquiries.length})`, icon: MessageSquare },
-          { id: 'courses', label: `Curriculums & Tracks (${localCourses.length})`, icon: BookOpen },
+          { id: 'courses', label: `Curriculums & Courses (${localCourses.length})`, icon: BookOpen },
           { id: 'trainees', label: `Trainee Roster (${trainees.length})`, icon: Users },
           { id: 'tapeouts', label: `Tapeout Approvals (${tapeouts.length})`, icon: Cpu },
           { id: 'cohorts', label: `Campus Batches (${cohorts.length})`, icon: Building2 }
@@ -651,7 +648,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.12rem', fontWeight: 700, color: 'var(--navy-dark)' }}>
-                  Curriculum & Track Telemetry
+                  Curriculum & Course Telemetry
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                   Active cohort progress & verification completion
@@ -710,7 +707,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
-                placeholder="Search trainees by name, email, or track..."
+                placeholder="Search trainees by name, email, or course..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -751,9 +748,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
                   <th style={{ padding: '0.75rem 1rem' }}>Trainee Name</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Track & Progress</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Course & Progress</th>
                   <th style={{ padding: '0.75rem 1rem' }}>Lab Hours</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Certification Level</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Certification</th>
                   <th style={{ padding: '0.75rem 1rem' }}>Interview Status</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -911,7 +908,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--navy-dark)' }}>
-                Active Curriculums & Silicon Tracks ({localCourses.length})
+                Active Curriculums & Silicon Courses ({localCourses.length})
               </h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 Create, edit, and update engineering syllabi in real time across the platform.
@@ -922,7 +919,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               className="ample-btn-primary"
             >
               <Plus size={15} />
-              Add New Track
+              Add New Course
             </button>
           </div>
 
@@ -1051,7 +1048,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   {c.name}
                 </h4>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
-                  Track: <strong>{c.track}</strong>
+                  Course: <strong>{c.track}</strong>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
                   Lead Mentor: {c.mentor}
@@ -1111,170 +1108,170 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {enquiries
               .filter(e => enquiryFilter === 'All' || e.status === enquiryFilter)
               .length === 0 ? (
-                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  No student inquiries found in this filter view.
-                </div>
-              ) : (
-                enquiries
-                  .filter(e => enquiryFilter === 'All' || e.status === enquiryFilter)
-                  .map((enq) => (
-                    <div
-                      key={enq.id}
-                      style={{
-                        backgroundColor: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: '16px',
-                        padding: '1.5rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1rem'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.96rem', color: 'var(--navy-dark)' }}>
-                              {enq.studentName}
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                No student inquiries found in this filter view.
+              </div>
+            ) : (
+              enquiries
+                .filter(e => enquiryFilter === 'All' || e.status === enquiryFilter)
+                .map((enq) => (
+                  <div
+                    key={enq.id}
+                    style={{
+                      backgroundColor: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '16px',
+                      padding: '1.5rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.96rem', color: 'var(--navy-dark)' }}>
+                            {enq.studentName}
+                          </span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                            &lt;{enq.studentEmail}&gt;
+                          </span>
+                          {enq.studentCampus && (
+                            <span style={{ fontSize: '0.72rem', backgroundColor: '#ffffff', border: '1px solid var(--border-subtle)', padding: '0.1rem 0.5rem', borderRadius: '9999px', color: 'var(--navy-primary)', fontWeight: 600 }}>
+                              {enq.studentCampus}
                             </span>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                              &lt;{enq.studentEmail}&gt;
-                            </span>
-                            {enq.studentCampus && (
-                              <span style={{ fontSize: '0.72rem', backgroundColor: '#ffffff', border: '1px solid var(--border-subtle)', padding: '0.1rem 0.5rem', borderRadius: '9999px', color: 'var(--navy-primary)', fontWeight: 600 }}>
-                                {enq.studentCampus}
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Track: <strong style={{ color: 'var(--navy-primary)' }}>{enq.track || 'General Silicon Question'}</strong> • Submitted: {new Date(enq.createdAt).toLocaleString()}
-                          </div>
+                          )}
                         </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                          Course: <strong style={{ color: 'var(--navy-primary)' }}>{enq.track || 'General Silicon Question'}</strong> • Submitted: {new Date(enq.createdAt).toLocaleString()}
+                        </div>
+                      </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <select
-                            value={enq.status}
-                            onChange={(e) => handleStatusChange(enq.id, e.target.value as any)}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <select
+                          value={enq.status}
+                          onChange={(e) => handleStatusChange(enq.id, e.target.value as any)}
+                          style={{
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            padding: '0.3rem 0.65rem',
+                            borderRadius: '9999px',
+                            border: '1px solid var(--border-strong)',
+                            backgroundColor: enq.status === 'resolved' ? '#ecfdf5' : enq.status === 'in_progress' ? '#eff6ff' : '#fffbeb',
+                            color: enq.status === 'resolved' ? '#059669' : enq.status === 'in_progress' ? '#1d4ed8' : '#b45309',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="pending">⏳ Pending Response</option>
+                          <option value="in_progress">● In Review</option>
+                          <option value="resolved">✓ Resolved</option>
+                        </select>
+
+                        <button
+                          onClick={() => handleDeleteEnquiry(enq.id)}
+                          style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.2rem' }}
+                          title="Delete Enquiry"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Question Details */}
+                    <div style={{ backgroundColor: '#ffffff', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--navy-dark)', marginBottom: '0.35rem' }}>
+                        Subject: {enq.subject}
+                      </div>
+                      <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                        "{enq.message}"
+                      </p>
+                    </div>
+
+                    {/* Official Faculty Reply (if present) */}
+                    {enq.reply && (
+                      <div style={{ backgroundColor: '#ecfdf5', borderLeft: '4px solid #059669', padding: '0.85rem 1.1rem', borderRadius: '0 10px 10px 0' }}>
+                        <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#059669', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <Check size={14} />
+                          Faculty Architect Response {enq.repliedAt ? `• ${new Date(enq.repliedAt).toLocaleDateString()}` : ''}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--navy-dark)', lineHeight: 1.5 }}>
+                          {enq.reply}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Reply Input Form */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          placeholder="Type faculty response to student..."
+                          value={replyTextMap[enq.id] || ''}
+                          onChange={(e) => setReplyTextMap(prev => ({ ...prev, [enq.id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSendReply(enq.id);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '0.55rem 0.85rem',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-strong)',
+                            fontSize: '0.85rem'
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSendReply(enq.id)}
+                          disabled={!replyTextMap[enq.id]?.trim()}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            padding: '0.55rem 1.1rem',
+                            borderRadius: '9999px',
+                            backgroundColor: replyTextMap[enq.id]?.trim() ? 'var(--navy-primary)' : '#94a3b8',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            border: 'none',
+                            cursor: replyTextMap[enq.id]?.trim() ? 'pointer' : 'not-allowed'
+                          }}
+                        >
+                          <Send size={13} />
+                          Send Reply & Resolve
+                        </button>
+                      </div>
+
+                      {/* Quick Templates */}
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Quick Response Suggestions:</span>
+                        {[
+                          'CTS skew budget is acceptable within 100ps for SkyWater 130nm.',
+                          'Use SEQ_ARB_WEIGHTED priority in your UVM sequencer arbitration.',
+                          'Ensure standard cell LEF spacing conforms to manufacturing grid rules.',
+                          'This topic will be demonstrated in Tuesday live cohort mentoring.'
+                        ].map((tmpl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setReplyTextMap(prev => ({ ...prev, [enq.id]: tmpl }))}
                             style={{
-                              fontSize: '0.78rem',
-                              fontWeight: 700,
-                              padding: '0.3rem 0.65rem',
+                              fontSize: '0.7rem',
+                              backgroundColor: '#ffffff',
+                              border: '1px solid var(--border-subtle)',
                               borderRadius: '9999px',
-                              border: '1px solid var(--border-strong)',
-                              backgroundColor: enq.status === 'resolved' ? '#ecfdf5' : enq.status === 'in_progress' ? '#eff6ff' : '#fffbeb',
-                              color: enq.status === 'resolved' ? '#059669' : enq.status === 'in_progress' ? '#1d4ed8' : '#b45309',
+                              padding: '0.15rem 0.55rem',
+                              color: 'var(--navy-primary)',
                               cursor: 'pointer'
                             }}
                           >
-                            <option value="pending">⏳ Pending Response</option>
-                            <option value="in_progress">● In Review</option>
-                            <option value="resolved">✓ Resolved</option>
-                          </select>
-
-                          <button
-                            onClick={() => handleDeleteEnquiry(enq.id)}
-                            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.2rem' }}
-                            title="Delete Enquiry"
-                          >
-                            <Trash2 size={16} />
+                            + {tmpl.slice(0, 32)}...
                           </button>
-                        </div>
-                      </div>
-
-                      {/* Question Details */}
-                      <div style={{ backgroundColor: '#ffffff', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--navy-dark)', marginBottom: '0.35rem' }}>
-                          Subject: {enq.subject}
-                        </div>
-                        <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                          "{enq.message}"
-                        </p>
-                      </div>
-
-                      {/* Official Faculty Reply (if present) */}
-                      {enq.reply && (
-                        <div style={{ backgroundColor: '#ecfdf5', borderLeft: '4px solid #059669', padding: '0.85rem 1.1rem', borderRadius: '0 10px 10px 0' }}>
-                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#059669', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <Check size={14} />
-                            Faculty Architect Response {enq.repliedAt ? `• ${new Date(enq.repliedAt).toLocaleDateString()}` : ''}
-                          </div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--navy-dark)', lineHeight: 1.5 }}>
-                            {enq.reply}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Reply Input Form */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <input
-                            type="text"
-                            placeholder="Type faculty response to student..."
-                            value={replyTextMap[enq.id] || ''}
-                            onChange={(e) => setReplyTextMap(prev => ({ ...prev, [enq.id]: e.target.value }))}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSendReply(enq.id);
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '0.55rem 0.85rem',
-                              borderRadius: '10px',
-                              border: '1px solid var(--border-strong)',
-                              fontSize: '0.85rem'
-                            }}
-                          />
-                          <button
-                            onClick={() => handleSendReply(enq.id)}
-                            disabled={!replyTextMap[enq.id]?.trim()}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.4rem',
-                              padding: '0.55rem 1.1rem',
-                              borderRadius: '9999px',
-                              backgroundColor: replyTextMap[enq.id]?.trim() ? 'var(--navy-primary)' : '#94a3b8',
-                              color: '#ffffff',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                              border: 'none',
-                              cursor: replyTextMap[enq.id]?.trim() ? 'pointer' : 'not-allowed'
-                            }}
-                          >
-                            <Send size={13} />
-                            Send Reply & Resolve
-                          </button>
-                        </div>
-
-                        {/* Quick Templates */}
-                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Quick Response Suggestions:</span>
-                          {[
-                            'CTS skew budget is acceptable within 100ps for SkyWater 130nm.',
-                            'Use SEQ_ARB_WEIGHTED priority in your UVM sequencer arbitration.',
-                            'Ensure standard cell LEF spacing conforms to manufacturing grid rules.',
-                            'This topic will be demonstrated in Tuesday live cohort mentoring.'
-                          ].map((tmpl, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => setReplyTextMap(prev => ({ ...prev, [enq.id]: tmpl }))}
-                              style={{
-                                fontSize: '0.7rem',
-                                backgroundColor: '#ffffff',
-                                border: '1px solid var(--border-subtle)',
-                                borderRadius: '9999px',
-                                padding: '0.15rem 0.55rem',
-                                color: 'var(--navy-primary)',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              + {tmpl.slice(0, 32)}...
-                            </button>
-                          ))}
-                        </div>
+                        ))}
                       </div>
                     </div>
-                  ))
-              )}
+                  </div>
+                ))
+            )}
           </div>
         </div>
       )}
@@ -1306,7 +1303,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--navy-dark)' }}>
-                  Create New Silicon Track
+                  Create New Silicon Course
                 </h3>
                 <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
                   Publish an industry-grade curriculum into Ample Learn.
@@ -1323,7 +1320,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <form onSubmit={handleCreateTrackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.35rem' }}>
-                  Track Title *
+                  Course Title *
                 </label>
                 <input
                   type="text"
@@ -1335,7 +1332,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.35rem' }}>
                     Category
@@ -1348,22 +1345,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <option value="VLSI">VLSI Design</option>
                     <option value="Embedded">Embedded Systems</option>
                     <option value="AI/ML">AI & ML Silicon</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.35rem' }}>
-                    Level
-                  </label>
-                  <select
-                    value={trackForm.level}
-                    onChange={(e) => setTrackForm({ ...trackForm, level: e.target.value as any })}
-                    style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '0.85rem' }}
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Industry Specialization">Specialization</option>
                   </select>
                 </div>
 
@@ -1458,7 +1439,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   type="submit"
                   className="ample-btn-primary"
                 >
-                  Publish Track Live
+                  Publish Course Live
                 </button>
               </div>
             </form>
@@ -1500,7 +1481,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <form onSubmit={handleUpdateCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.3rem' }}>
-                  Track Title *
+                  Course Title *
                 </label>
                 <input
                   type="text"
@@ -1511,7 +1492,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.3rem' }}>
                     Category
@@ -1524,22 +1505,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <option value="VLSI">VLSI Design</option>
                     <option value="Embedded">Embedded Systems</option>
                     <option value="AI/ML">AI & ML Silicon</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.3rem' }}>
-                    Level
-                  </label>
-                  <select
-                    value={editingCourse.level}
-                    onChange={(e) => setEditingCourse({ ...editingCourse, level: e.target.value as any })}
-                    style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '0.85rem' }}
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Industry Specialization">Specialization</option>
                   </select>
                 </div>
 
@@ -1694,7 +1659,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
               <div>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark)', display: 'block', marginBottom: '0.3rem' }}>
-                  Associated Track
+                  Associated Course
                 </label>
                 <select
                   value={cohortForm.track}
