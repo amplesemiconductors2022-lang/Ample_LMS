@@ -20,7 +20,7 @@ const viewFromHash = (): View => {
 };
 import { COURSES_DATA } from './data/coursesData';
 import { fetchCourses, fetchCurrentUser, enrollCourseApi, completeLessonApi } from './api/client';
-import type { Course, UserProgress, User } from './types';
+import type { Course, UserProgress, User, Category } from './types';
 import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 const EMPTY_PROGRESS: UserProgress = {
@@ -41,6 +41,7 @@ export const App: React.FC = () => {
   }, []);
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [catalogCategory, setCatalogCategory] = useState<Category>('All');
 
   // Authentication & Profile State
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -357,7 +358,12 @@ export const App: React.FC = () => {
       <Header
         currentView={currentView}
         currentUser={currentUser}
-        onNavigate={handleNavigate}
+        onNavigate={(view) => {
+          if (view === 'catalog') {
+            setCatalogCategory('All');
+          }
+          handleNavigate(view);
+        }}
         onOpenAuth={handleOpenAuth}
         onSignOut={handleSignOut}
       />
@@ -367,7 +373,10 @@ export const App: React.FC = () => {
         <ErrorBoundary>
           {currentView === 'landing' && (
             <LandingHero
-              onExploreTracks={() => handleNavigate('catalog')}
+              onExploreTracks={(category?: Category) => {
+                setCatalogCategory(category || 'All');
+                handleNavigate('catalog');
+              }}
               onOpenDashboard={() => handleNavigate('dashboard')}
             />
           )}
@@ -377,6 +386,8 @@ export const App: React.FC = () => {
               courses={courses}
               onSelectCourse={handleSelectCourse}
               enrolledCourseIds={userProgress.enrolledCourseIds}
+              initialCategory={catalogCategory}
+              onCategoryChange={setCatalogCategory}
             />
           )}
 

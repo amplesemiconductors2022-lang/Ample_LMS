@@ -10,6 +10,8 @@ interface CourseCatalogProps {
   courses: Course[];
   onSelectCourse: (course: Course) => void;
   enrolledCourseIds: string[];
+  initialCategory?: Category;
+  onCategoryChange?: (category: Category) => void;
 }
 
 const DOMAIN_META: Record<string, { label: string; title: string }> = {
@@ -21,11 +23,22 @@ const DOMAIN_META: Record<string, { label: string; title: string }> = {
 export const CourseCatalog: React.FC<CourseCatalogProps> = ({
   courses,
   onSelectCourse,
-  enrolledCourseIds
+  enrolledCourseIds,
+  initialCategory = 'All',
+  onCategoryChange
 }) => {
-  const [category, setCategory] = useState<Category>('All');
+  const [category, setCategory] = useState<Category>(initialCategory || 'All');
   const [query, setQuery] = useState('');
   const railRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  React.useEffect(() => {
+    setCategory(initialCategory || 'All');
+  }, [initialCategory]);
+
+  const selectCategory = (newCat: Category) => {
+    setCategory(newCat);
+    onCategoryChange?.(newCat);
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -74,7 +87,7 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
 
   const reset = () => {
     setQuery('');
-    setCategory('All');
+    selectCategory('All');
   };
 
   const isGroupedDomainMode = category === 'All' && query.trim() === '';
@@ -189,7 +202,7 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
                   <button
                     type="button"
                     className="cc-viewall-btn"
-                    onClick={() => setCategory(group.key as Category)}
+                    onClick={() => selectCategory(group.key as Category)}
                   >
                     View all
                     <ArrowRight size={14} aria-hidden="true" />
@@ -226,7 +239,7 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
               <button
                 type="button"
                 className="cc-back-btn"
-                onClick={() => setCategory('All')}
+                onClick={() => selectCategory('All')}
               >
                 <ArrowLeft size={14} aria-hidden="true" />
                 Back to all domains

@@ -1,15 +1,24 @@
 import React from 'react';
 import { ArrowRight, Check } from 'lucide-react';
+import type { Category } from '../types';
 import '../landing.css';
 
 interface LandingHeroProps {
-  onExploreTracks: () => void;
+  onExploreTracks: (category?: Category) => void;
   onOpenDashboard: () => void;
 }
 
-const TRACKS = [
+const TRACKS: Array<{
+  title: string;
+  category: Category;
+  img: string;
+  blurb: string;
+  body: string;
+  points: string[];
+}> = [
   {
     title: 'VLSI & Physical Design',
+    category: 'VLSI',
     img: '/assets/img/service-vlsi.jpg',
     blurb: 'RTL to GDSII on sub-14nm nodes',
     body: 'Floorplanning, clock tree synthesis, static timing analysis and physical sign-off, taught on real SoC subsystems.',
@@ -17,6 +26,7 @@ const TRACKS = [
   },
   {
     title: 'Embedded Systems & RTOS',
+    category: 'Embedded',
     img: '/assets/img/embedded.jpg',
     blurb: 'Firmware for ARM Cortex-M and RISC-V',
     body: 'Low-power architecture, real-time scheduling, device drivers and board bring-up.',
@@ -24,6 +34,7 @@ const TRACKS = [
   },
   {
     title: 'TinyML & Edge AI Silicon',
+    category: 'AI/ML',
     img: '/assets/img/service-ai-ml.jpg',
     blurb: 'Quantized models on low-power chips',
     body: 'Model compression, fixed-point math and accelerator design for edge devices.',
@@ -63,7 +74,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
               firmware and Edge AI, with lab work that mirrors real tapeouts.
             </p>
             <div className="lp-actions">
-              <button className="lp-btn lp-btn-solid" onClick={onExploreTracks}>
+              <button className="lp-btn lp-btn-solid" onClick={() => onExploreTracks('All')}>
                 Browse courses <ArrowRight size={17} aria-hidden="true" />
               </button>
               <button className="lp-btn lp-btn-ghost" onClick={onOpenDashboard}>
@@ -75,7 +86,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
           <ul className="lp-tracks" aria-label="Learning courses">
             {TRACKS.map(t => (
               <li key={t.title}>
-                <button className="lp-track" onClick={onExploreTracks}>
+                <button
+                  type="button"
+                  className="lp-track"
+                  onClick={() => onExploreTracks(t.category)}
+                  title={`View all ${t.category} courses`}
+                >
                   <img src={t.img} alt="" loading="eager" />
                   <span><b>{t.title}</b>{t.blurb}</span>
                   <ArrowRight size={18} aria-hidden="true" />
@@ -113,6 +129,13 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpe
                   <li key={p}><Check size={15} aria-hidden="true" /><span>{p}</span></li>
                 ))}
               </ul>
+              <button
+                type="button"
+                className="lp-disc-cta"
+                onClick={() => onExploreTracks(t.category)}
+              >
+                View all {t.category} courses <ArrowRight size={15} aria-hidden="true" />
+              </button>
             </div>
           </article>
         ))}
