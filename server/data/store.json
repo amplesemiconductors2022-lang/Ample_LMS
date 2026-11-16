@@ -461,10 +461,10 @@
       "streakDays": 1,
       "topScore": 0,
       "createdAt": "2026-11-16T09:47:23.279Z",
-      "isVerified": false,
-      "verificationCode": "789821",
-      "verificationToken": "ce0c6bf6936d6512aa68e3dc150eb1c642a17c38a83fa467cff304a547d62963",
-      "verificationTokenExpiry": "2026-11-17T09:47:23.150Z"
+      "isVerified": true,
+      "verificationCode": "612572",
+      "verificationToken": "81acbdd48fc35964f211a2bd4f2334c2eee257fc481c822f438d18877ef05ba4",
+      "verificationTokenExpiry": "2026-11-17T10:30:11.529Z"
     },
     {
       "id": "usr-1794812623949",

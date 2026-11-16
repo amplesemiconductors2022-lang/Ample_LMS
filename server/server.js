@@ -521,6 +521,21 @@ const initialData = {
   ]
 };
 
+// Get public frontend portal base URL
+function getAppBaseUrl(req) {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/+$/, '');
+  }
+  const origin = req?.get?.('origin') || req?.get?.('referer');
+  if (origin && !origin.includes('localhost')) {
+    try {
+      const u = new URL(origin);
+      return `${u.protocol}//${u.host}`;
+    } catch { }
+  }
+  return 'https://ample-lms.vercel.app';
+}
+
 // Storage adapter (MongoDB Atlas when MONGODB_URI is set, JSON file fallback otherwise)
 const { readStore, saveStore, getStorageMode, cloneSeed } = createStore({
   initialData,
@@ -747,7 +762,7 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
   await saveStore(data);
 
   // Send verification email via Brevo
-  const baseUrl = process.env.APP_URL || 'http://localhost:5174';
+  const baseUrl = getAppBaseUrl(req);
   const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(cleanEmail)}`;
   console.log(`[Auth] Verification email requested for ${cleanEmail} (code: ${code})`);
   sendVerificationEmail({
@@ -846,7 +861,7 @@ app.post('/api/auth/resend-verification', async (req, res) => {
   user.verificationTokenExpiry = expiry;
   await saveStore(data);
 
-  const baseUrl = process.env.APP_URL || 'http://localhost:5174';
+  const baseUrl = getAppBaseUrl(req);
   const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(user.email)}`;
 
   console.log(`[Auth] Resending verification email to ${user.email} (code: ${code})`);
