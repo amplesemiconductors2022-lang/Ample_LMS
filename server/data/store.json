@@ -450,9 +450,9 @@
       "topScore": 0,
       "createdAt": "2026-11-16T07:03:44.038Z",
       "isVerified": true,
-      "verificationCode": "272649",
-      "verificationToken": "7f8f2d07d2a3919c604a18a4de8f145f2a46ed66a45d2451b1384613b55600b3",
-      "verificationTokenExpiry": "2026-11-17T07:19:15.198Z"
+      "verificationCode": "369247",
+      "verificationToken": "58ef7146a61616959c6387e77bd4554122a0f909581b82c45d3a95d5f47ffb31",
+      "verificationTokenExpiry": "2026-11-17T08:36:47.757Z"
     },
     {
       "id": "usr-1794804905354",
@@ -475,7 +475,10 @@
       "streakDays": 1,
       "topScore": 0,
       "createdAt": "2026-11-16T04:55:05.445Z",
-      "isVerified": true
+      "isVerified": true,
+      "verificationCode": "410996",
+      "verificationToken": "3abcb36a955bbc7e3488df7941125a900547285bd373ec3301579f0a6a392bd9",
+      "verificationTokenExpiry": "2026-11-17T08:36:35.161Z"
     },
     {
       "id": "usr-1794660175380",

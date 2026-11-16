@@ -3,7 +3,7 @@ const safeUrl = (u) => (/^https?:\/\//i.test(u || '') ? esc(u) : '');
 
 export const emailTemplates = {
   verifyEmail: (name, verificationUrl, code) => ({
-    subject: `${code} is your Ample LMS verification code`,
+    subject: 'Verify Your Email — Ample Semiconductors LMS',
     html: `
       <!DOCTYPE html>
       <html>
