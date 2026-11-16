@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { LandingHero } from './components/LandingHero';
 import { CourseCatalog } from './components/CourseCatalog';
@@ -65,6 +65,7 @@ export const App: React.FC = () => {
 
   // Global Toast Feedback State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const verificationAttemptedRef = useRef(false);
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setToast({ message, type });
@@ -103,10 +104,14 @@ export const App: React.FC = () => {
       showToast(msg || 'OAuth sign-in failed.', 'error');
       window.location.hash = 'landing';
     } else if (rawHash.startsWith('#verify=')) {
+      if (verificationAttemptedRef.current) return;
+      verificationAttemptedRef.current = true;
       const query = rawHash.slice(1);
       const searchParams = new URLSearchParams(query);
       const verifyToken = searchParams.get('verify') || '';
       const verifyEmail = searchParams.get('email') || '';
+      // Immediately remove hash from address bar to prevent duplicate attempts on reloads
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
       if (verifyToken) {
         showToast('Verifying your email address...', 'info');
         verifyEmailApi({ token: verifyToken, email: verifyEmail })
@@ -115,7 +120,7 @@ export const App: React.FC = () => {
               setCurrentUser(res.user);
               localStorage.setItem('ample_current_user', JSON.stringify(res.user));
               if (res.token) localStorage.setItem('ample_token', res.token);
-              showToast('Email verified successfully! Welcome to Ample LMS.', 'success');
+              showToast(res.message || 'Email verified successfully! Welcome to Ample LMS.', 'success');
               handleNavigate('dashboard');
             }
           })

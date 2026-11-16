@@ -794,8 +794,22 @@ app.post('/api/auth/verify-email', async (req, res) => {
     return res.status(400).json({ error: 'Email and 6-digit verification code are required.' });
   }
 
+  // Gracefully handle already-verified user when clicking an already-consumed email token link
+  if (!user && email) {
+    const existing = (data.users || []).find(u => u.email.toLowerCase() === email);
+    if (existing && existing.isVerified) {
+      const { password: _, ...userSafe } = existing;
+      return res.json({
+        success: true,
+        user: userSafe,
+        token: signToken(existing),
+        message: 'Account is already verified! Welcome to Ample LMS.'
+      });
+    }
+  }
+
   if (!user) {
-    return res.status(400).json({ error: 'Invalid or expired verification token.' });
+    return res.status(400).json({ error: 'Invalid or expired verification token. Please sign in or request a new code.' });
   }
 
   user.isVerified = true;

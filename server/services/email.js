@@ -43,10 +43,15 @@ export async function sendEmail({ to, toName, subject, htmlContent, textContent 
     },
     body: JSON.stringify({
       sender: { email: senderEmail, name: senderName },
+      replyTo: { email: senderEmail, name: senderName },
       to: [{ email: to, name: toName || to }],
       subject,
       htmlContent,
       textContent,
+      headers: {
+        'X-Mailin-Tag': 'account-verification',
+        'X-Auto-Response-Suppress': 'OOF, AutoReply'
+      }
     }),
   });
 

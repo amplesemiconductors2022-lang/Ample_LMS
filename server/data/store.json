@@ -227,6 +227,18 @@
   ],
   "trainees": [
     {
+      "id": "TR-110",
+      "name": "varun",
+      "email": "darkelectroff@gmail.com",
+      "track": "VLSI",
+      "progress": 5,
+      "labHours": 0,
+      "streak": 1,
+      "passportLevel": "Enrolled Trainee",
+      "interviewStatus": "under_review",
+      "topScore": 0
+    },
+    {
       "id": "TR-109",
       "name": "varun",
       "email": "chintureddy1470@gmail.com",
@@ -417,6 +429,29 @@
   ],
   "users": [
     {
+      "id": "usr-1794812623949",
+      "name": "varun",
+      "email": "darkelectroff@gmail.com",
+      "password": "scrypt$62a26027662d68b0dca2e288c3c23256$3a5d9477553e4c79dcffd39fed7c0cf37d63d1b440a4080466b26ab4be8593fd3c5188aad6c3aede324312b4ec3c6b20044463b598e52c7950beeb92f756b6fd",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Bengaluru",
+      "targetTrack": "VLSI",
+      "bio": "Semiconductor engineering trainee at Ample Semiconductors Academy.",
+      "githubUrl": "",
+      "linkedinUrl": "",
+      "passportLevel": "Enrolled Trainee",
+      "enrolledCourseIds": [
+        "course-vlsi-01"
+      ],
+      "completedLessonIds": [],
+      "labHours": 0,
+      "streakDays": 1,
+      "topScore": 0,
+      "createdAt": "2026-11-16T07:03:44.038Z",
+      "isVerified": true
+    },
+    {
       "id": "usr-1794804905354",
       "name": "varun",
       "email": "chintureddy1470@gmail.com",
@@ -437,10 +472,7 @@
       "streakDays": 1,
       "topScore": 0,
       "createdAt": "2026-11-16T04:55:05.445Z",
-      "isVerified": false,
-      "verificationCode": "238679",
-      "verificationToken": "7af26a12ae91b1905b43e005623426cb3500f7890ec05d042f5ad161ed818ed7",
-      "verificationTokenExpiry": "2026-11-17T04:55:05.354Z"
+      "isVerified": true
     },
     {
       "id": "usr-1794660175380",
