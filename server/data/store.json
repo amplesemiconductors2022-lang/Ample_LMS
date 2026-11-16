@@ -95,7 +95,7 @@
         "Verilator",
         "SystemVerilog / UVM 1.2"
       ],
-      "enrolledCount": 980,
+      "enrolledCount": 981,
       "sampleLabCode": "// UVM Sequence Item Definition\nclass axi_transaction extends uvm_sequence_item;\n    rand bit [31:0] addr;\n    rand bit [31:0] data;\n    `uvm_object_utils_begin(axi_transaction)\n        `uvm_field_int(addr, UVM_ALL_ON)\n        `uvm_field_int(data, UVM_ALL_ON)\n    `uvm_object_utils_end\nendclass",
       "modules": [
         {
@@ -226,6 +226,30 @@
     }
   ],
   "trainees": [
+    {
+      "id": "TR-109",
+      "name": "varun",
+      "email": "chintureddy1470@gmail.com",
+      "track": "VLSI",
+      "progress": 5,
+      "labHours": 0,
+      "streak": 1,
+      "passportLevel": "Enrolled Trainee",
+      "interviewStatus": "under_review",
+      "topScore": 0
+    },
+    {
+      "id": "TR-108",
+      "name": "hi",
+      "email": "varunreddy0129@gmail.com",
+      "track": "VLSI",
+      "progress": 33,
+      "labHours": 0.5,
+      "streak": 1,
+      "passportLevel": "Enrolled Trainee",
+      "interviewStatus": "under_review",
+      "topScore": 0
+    },
     {
       "id": "TR-107",
       "name": "example",
@@ -392,6 +416,59 @@
     }
   ],
   "users": [
+    {
+      "id": "usr-1794804905354",
+      "name": "varun",
+      "email": "chintureddy1470@gmail.com",
+      "password": "scrypt$2814ca56a04c089976f6639fb4beb2a4$ae163524f3e9dd8826229c2ff35d6ec9ed953c18e1ba44fa9904f9939354b0edd04a2a05aace849aeabb4a22023e94eaa47fc6aa373303fc5738277d30c7989e",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Hyderabad",
+      "targetTrack": "VLSI",
+      "bio": "Semiconductor engineering trainee at Ample Semiconductors Academy.",
+      "githubUrl": "",
+      "linkedinUrl": "",
+      "passportLevel": "Enrolled Trainee",
+      "enrolledCourseIds": [
+        "course-vlsi-01"
+      ],
+      "completedLessonIds": [],
+      "labHours": 0,
+      "streakDays": 1,
+      "topScore": 0,
+      "createdAt": "2026-11-16T04:55:05.445Z",
+      "isVerified": false,
+      "verificationCode": "238679",
+      "verificationToken": "7af26a12ae91b1905b43e005623426cb3500f7890ec05d042f5ad161ed818ed7",
+      "verificationTokenExpiry": "2026-11-17T04:55:05.354Z"
+    },
+    {
+      "id": "usr-1794660175380",
+      "name": "hi",
+      "email": "varunreddy0129@gmail.com",
+      "password": "scrypt$3c47259794e752787e09fdc775fd7da2$6b7fad74ec8efcd354c0536b87b86115e1c1aeb0bcab4e3f7f6e2fe6bd2e770eeef351e86a12f2b6aaa17c57d30e1e5637e588af728c85e6dd1f0dc485faada0",
+      "role": "trainee",
+      "avatar": "",
+      "campus": "Bengaluru",
+      "targetTrack": "VLSI",
+      "bio": "Semiconductor engineering trainee at Ample Semiconductors Academy.",
+      "githubUrl": "",
+      "linkedinUrl": "",
+      "passportLevel": "Enrolled Trainee",
+      "enrolledCourseIds": [
+        "course-vlsi-01",
+        "course-vlsi-02"
+      ],
+      "completedLessonIds": [
+        "uvm-les-101"
+      ],
+      "labHours": 0.5,
+      "streakDays": 1,
+      "topScore": 0,
+      "createdAt": "2026-11-14T12:42:55.492Z",
+      "isVerified": true,
+      "quizScores": {}
+    },
     {
       "id": "usr-1794471699572",
       "name": "example",

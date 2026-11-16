@@ -280,6 +280,8 @@
   display: flex;
   gap: 1.35rem;
   overflow-x: auto;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   padding: .55rem .2rem 1.15rem;
@@ -392,7 +394,7 @@
   right: 0;
   height: 3.5px;
   z-index: 3;
-  background: linear-gradient(90deg, var(--navy-primary), #38bdf8, var(--copper));
+  background: linear-gradient(90deg, var(--navy-primary), #5a7bd6, var(--accent));
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform .4s cubic-bezier(.22, 1, .36, 1);
@@ -506,7 +508,7 @@
 }
 
 .cc-meta .rate {
-  color: #b45309;
+  color: #4a5573;
   font-weight: 700;
   margin-left: auto;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import type { Category } from '../types';
 import '../landing.css';
@@ -49,56 +49,45 @@ const STATS = [
   ['2 hubs', 'Bengaluru and Hyderabad'],
 ];
 
+// Looping background video. Skipped for reduced-motion users and Data Saver,
+// who get the still poster instead.
+const HeroVideo: React.FC = () => {
+  const [play, setPlay] = useState(false);
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saver = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    setPlay(!reduce && !saver);
+  }, []);
+  if (!play) return <img className="lp-hero-video" src="/assets/img/bg-chip.jpg" alt="" aria-hidden="true" />;
+  return (
+    <video
+      className="lp-hero-video"
+      autoPlay muted loop playsInline
+      preload="metadata"
+      poster="/assets/img/bg-chip.jpg"
+      aria-hidden="true"
+      tabIndex={-1}
+    >
+      <source src="/assets/img/bg-video.mp4" type="video/mp4" />
+    </video>
+  );
+};
+
 export const LandingHero: React.FC<LandingHeroProps> = ({ onExploreTracks, onOpenDashboard }) => (
   <>
     <section className="lp-hero" aria-labelledby="hero-title">
-      <video
-        className="lp-hero-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster="/assets/img/bg-chip.jpg"
-        aria-hidden="true"
-        tabIndex={-1}
-      >
-        <source src="/assets/img/bg-video.mp4" type="video/mp4" />
-      </video>
+      <HeroVideo />
       <div className="lp-wrap">
-        <div className="lp-hero-grid">
-          <div>
-            <h1 id="hero-title">Learn chip design and embedded systems from the architects who ship silicon.</h1>
-            <p className="lead">
-              Practical courses from Ample Semiconductors: synthesizable RTL, verification, timing closure,
-              firmware and Edge AI, with lab work that mirrors real tapeouts.
-            </p>
-            <div className="lp-actions">
-              <button className="lp-btn lp-btn-solid" onClick={() => onExploreTracks('All')}>
-                Browse courses <ArrowRight size={17} aria-hidden="true" />
-              </button>
-              <button className="lp-btn lp-btn-ghost" onClick={onOpenDashboard}>
-                Open my dashboard
-              </button>
-            </div>
+        <div className="lp-hero-content">
+          <h1 id="hero-title">Learn chip design and embedded systems from the architects who ship silicon.</h1>
+          <div className="lp-actions">
+            <button className="lp-btn lp-btn-solid" onClick={() => onExploreTracks('All')}>
+              Browse courses <ArrowRight size={17} aria-hidden="true" />
+            </button>
+            <button className="lp-btn lp-btn-ghost" onClick={onOpenDashboard}>
+              Open my dashboard
+            </button>
           </div>
-
-          <ul className="lp-tracks" aria-label="Learning courses">
-            {TRACKS.map(t => (
-              <li key={t.title}>
-                <button
-                  type="button"
-                  className="lp-track"
-                  onClick={() => onExploreTracks(t.category)}
-                  title={`View all ${t.category} courses`}
-                >
-                  <img src={t.img} alt="" loading="eager" />
-                  <span><b>{t.title}</b>{t.blurb}</span>
-                  <ArrowRight size={18} aria-hidden="true" />
-                </button>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>

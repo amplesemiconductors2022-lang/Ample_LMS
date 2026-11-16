@@ -112,13 +112,13 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
-              backgroundColor: isCompleted ? '#ecfdf5' : 'var(--navy-primary)',
-              color: isCompleted ? '#059669' : '#ffffff',
+              backgroundColor: isCompleted ? '#eff2fa' : 'var(--navy-primary)',
+              color: isCompleted ? '#233a78' : '#ffffff',
               fontWeight: 700,
               fontSize: '0.85rem',
               padding: '0.55rem 1.25rem',
               borderRadius: '9999px',
-              border: isCompleted ? '1px solid #a7f3d0' : 'none',
+              border: isCompleted ? '1px solid #b2c0e9' : 'none',
               cursor: 'pointer',
               boxShadow: isCompleted ? 'none' : '0 4px 12px rgba(36, 64, 146, 0.25)',
               transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -200,7 +200,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
                         }}
                       >
                         {done ? (
-                          <CheckCircle size={15} color="#059669" style={{ flexShrink: 0 }} />
+                          <CheckCircle size={15} color="#233a78" style={{ flexShrink: 0 }} />
                         ) : lesson.type === 'video' ? (
                           <PlayCircle size={15} color={isCurrent ? 'var(--navy-primary)' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
                         ) : lesson.type === 'lab' ? (
@@ -421,7 +421,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.85rem',
                 lineHeight: 1.6,
-                color: '#93c5fd',
+                color: '#5f7cca',
                 overflowX: 'auto'
               }}>
                 <code>{course.sampleLabCode || `// Sample Hardware Definition\nmodule design_core (\n    input clk,\n    input rst_n\n);\n    // Real-time logic implementation\nendmodule`}</code>
@@ -469,13 +469,13 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
 
                           if (quizSubmitted) {
                             if (optIdx === q.correctIndex) {
-                              optBg = '#ecfdf5';
-                              optBorder = '#a7f3d0';
-                              optColor = '#059669';
+                              optBg = '#eff2fa';
+                              optBorder = '#b2c0e9';
+                              optColor = '#233a78';
                             } else if (isSelected && !isCorrect) {
                               optBg = '#fef2f2';
-                              optBorder = '#fecaca';
-                              optColor = '#dc2626';
+                              optBorder = '#e0e2e8';
+                              optColor = '#6f7993';
                             }
                           } else if (isSelected) {
                             optBg = 'var(--navy-light)';
@@ -527,10 +527,10 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
                           marginTop: '1rem',
                           padding: '0.75rem 1rem',
                           borderRadius: '8px',
-                          backgroundColor: isCorrect ? '#ecfdf5' : '#fef2f2',
-                          border: `1px solid ${isCorrect ? '#a7f3d0' : '#fecaca'}`,
+                          backgroundColor: isCorrect ? '#eff2fa' : '#fef2f2',
+                          border: `1px solid ${isCorrect ? '#b2c0e9' : '#e0e2e8'}`,
                           fontSize: '0.82rem',
-                          color: isCorrect ? '#065f46' : '#991b1b'
+                          color: isCorrect ? '#17264e' : '#4d5467'
                         }}>
                           <strong>{isCorrect ? 'Correct! ' : 'Explanation: '}</strong>
                           {q.explanation}

@@ -458,13 +458,22 @@ export async function loginUser(email: string, password?: string): Promise<{ use
   return data;
 }
 
+export interface SignupResponse {
+  success?: boolean;
+  requiresVerification?: boolean;
+  email?: string;
+  message?: string;
+  user?: User;
+  token?: string;
+}
+
 export async function signupUser(userData: {
   name: string;
   email: string;
   password?: string;
   campus?: string;
   targetTrack?: string;
-}): Promise<{ user: User; token: string }> {
+}): Promise<SignupResponse> {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: 'POST',
     headers: authHeaders(),
@@ -475,9 +484,38 @@ export async function signupUser(userData: {
     throw new Error(err.error || 'Sign up failed');
   }
   const data = await res.json();
-  setLocalFallback('current_user', data.user);
+  if (data.user) setLocalFallback('current_user', data.user);
   if (data.token) localStorage.setItem('ample_token', data.token);
   return data;
+}
+
+export async function verifyEmailApi(payload: { email?: string; code?: string; token?: string }): Promise<{ user: User; token: string; message?: string }> {
+  const res = await fetch(`${API_BASE}/auth/verify-email`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Email verification failed');
+  }
+  const data = await res.json();
+  if (data.user) setLocalFallback('current_user', data.user);
+  if (data.token) localStorage.setItem('ample_token', data.token);
+  return data;
+}
+
+export async function resendVerificationApi(email: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/auth/resend-verification`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to resend code');
+  }
+  return res.json();
 }
 
 export interface ProgressSyncResponse {

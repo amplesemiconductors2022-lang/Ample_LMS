@@ -35,7 +35,7 @@ export const AmpleLMSLogo: React.FC<AmpleLMSLogoProps> = ({
   const lmsBadgeStyle: React.CSSProperties = {
     backgroundColor: theme === 'dark' ? 'var(--navy-primary, #244092)' : 'var(--navy-primary, #244092)',
     backgroundImage: theme === 'dark'
-      ? 'linear-gradient(135deg, #244092 0%, #2563eb 100%)'
+      ? 'linear-gradient(135deg, #244092 0%, #35519f 100%)'
       : 'linear-gradient(135deg, #244092 0%, #172b68 100%)',
     color: '#ffffff',
     fontSize: {
@@ -55,7 +55,7 @@ export const AmpleLMSLogo: React.FC<AmpleLMSLogoProps> = ({
     letterSpacing: '0.09em',
     lineHeight: 1,
     boxShadow: '0 2px 8px rgba(36, 64, 146, 0.3)',
-    border: theme === 'dark' ? '1px solid rgba(56, 189, 248, 0.38)' : 'none',
+    border: theme === 'dark' ? '1px solid rgba(90, 123, 214, 0.38)' : 'none',
     flexShrink: 0,
     display: 'inline-flex',
     alignItems: 'center',

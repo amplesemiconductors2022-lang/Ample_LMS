@@ -186,9 +186,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>LEARNING STREAK</span>
-            <Flame size={18} color="#d97706" />
+            <Flame size={18} color="#576488" />
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#d97706' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#576488' }}>
             {userProgress.streakDays} Days 🔥
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
@@ -200,9 +200,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>COMPLETED LESSONS</span>
-            <BookOpen size={18} color="#059669" />
+            <BookOpen size={18} color="#233a78" />
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#233a78' }}>
             {userProgress.completedLessonIds.length} Lessons
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
@@ -228,9 +228,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>ACTIVE COURSES</span>
-            <Layers size={18} color="#7c3aed" />
+            <Layers size={18} color="#5e7ac9" />
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#7c3aed' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#5e7ac9' }}>
             {enrolledCourses.length} Enrolled
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
@@ -432,9 +432,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                         fontWeight: 700,
                         padding: '0.15rem 0.5rem',
                         borderRadius: '9999px',
-                        backgroundColor: enq.status === 'resolved' ? '#ecfdf5' : enq.status === 'in_progress' ? '#eff6ff' : '#fffbeb',
-                        color: enq.status === 'resolved' ? '#059669' : enq.status === 'in_progress' ? '#1d4ed8' : '#b45309',
-                        border: `1px solid ${enq.status === 'resolved' ? '#a7f3d0' : enq.status === 'in_progress' ? '#bfdbfe' : '#fde68a'}`
+                        backgroundColor: enq.status === 'resolved' ? '#eff2fa' : enq.status === 'in_progress' ? '#eff6ff' : '#f3f4f7',
+                        color: enq.status === 'resolved' ? '#233a78' : enq.status === 'in_progress' ? '#30498f' : '#4a5573',
+                        border: `1px solid ${enq.status === 'resolved' ? '#b2c0e9' : enq.status === 'in_progress' ? '#bfdbfe' : '#b6bdd1'}`
                       }}>
                         {enq.status === 'resolved' ? '✓ Answered by Faculty' : enq.status === 'in_progress' ? '● Under Faculty Review' : '⏳ Pending Response'}
                       </span>
@@ -456,11 +456,11 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                         marginTop: '0.35rem',
                         padding: '0.85rem',
                         backgroundColor: '#ffffff',
-                        borderLeft: '3px solid #059669',
+                        borderLeft: '3px solid #233a78',
                         borderRadius: '0 8px 8px 0',
                         fontSize: '0.82rem'
                       }}>
-                        <div style={{ fontWeight: 700, color: '#059669', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <div style={{ fontWeight: 700, color: '#233a78', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                           <CheckCircle2 size={13} />
                           Faculty Architect Reply:
                         </div>
@@ -487,7 +487,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               Need architectural 1-on-1 guidance? R. K. Narayanan and Aditya V. Reddy conduct weekly live cohort reviews every Tuesday & Thursday at 5:00 PM IST.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', backgroundColor: '#ecfdf5', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#233a78', backgroundColor: '#eff2fa', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
                 Next Session: Thursday 5:00 PM IST
               </span>
             </div>

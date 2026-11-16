@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Award, BookOpen, ShieldCheck, LogIn, LogOut, ChevronDown, ExternalLink
+  Award, BookOpen, ShieldCheck, LogIn, LogOut, ChevronDown, ExternalLink, Home
 } from 'lucide-react';
 import { AmpleLMSLogo } from './AmpleLMSLogo';
 import type { User } from '../types';
@@ -76,15 +76,11 @@ export const Header: React.FC<HeaderProps> = ({
             ? [
               ['admin', 'Admin Management Console', ShieldCheck],
             ] as const
-            : currentUser
-              ? [
-                ['dashboard', 'My dashboard', Award],
-                ['catalog', 'Courses', BookOpen],
-              ] as const
-              : [
-                ['landing', 'Overview', null],
-                ['catalog', 'Courses', BookOpen],
-              ] as const
+            : [
+              ['landing', 'Overview', Home],
+              ['catalog', 'Courses', BookOpen],
+              ['dashboard', 'My Dashboard', Award],
+            ] as const
           ).map(([view, label, Icon]) => (
             <button key={view} onClick={() => onNavigate(view)} aria-current={currentView === view ? 'page' : undefined}>
               {Icon && <Icon size={14} aria-hidden="true" />}{label}
@@ -140,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>
                     {currentUser.name.split(' ')[0]}
                   </span>
-                  <span style={{ fontSize: '0.65rem', color: currentUser.role === 'admin' ? '#fbbf24' : '#38bdf8', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.65rem', color: currentUser.role === 'admin' ? '#7784a8' : '#5a7bd6', fontWeight: 600 }}>
                     {currentUser.role === 'admin' ? 'Admin' : 'Trainee'}
                   </span>
                 </div>
@@ -173,11 +169,11 @@ export const Header: React.FC<HeaderProps> = ({
                       <span style={{
                         fontSize: '0.68rem',
                         fontWeight: 700,
-                        backgroundColor: currentUser.role === 'admin' ? '#eff6ff' : '#ecfdf5',
-                        color: currentUser.role === 'admin' ? '#1d4ed8' : '#059669',
+                        backgroundColor: currentUser.role === 'admin' ? '#eff6ff' : '#eff2fa',
+                        color: currentUser.role === 'admin' ? '#30498f' : '#233a78',
                         padding: '0.1rem 0.45rem',
                         borderRadius: '9999px',
-                        border: currentUser.role === 'admin' ? '1px solid #bfdbfe' : '1px solid #a7f3d0'
+                        border: currentUser.role === 'admin' ? '1px solid #bfdbfe' : '1px solid #b2c0e9'
                       }}>
                         {currentUser.role === 'admin' ? 'Administrator' : 'Verified Student'}
                       </span>
@@ -196,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
                         borderRadius: '8px',
                         border: 'none',
                         backgroundColor: 'transparent',
-                        color: '#dc2626',
+                        color: '#6f7993',
                         fontSize: '0.84rem',
                         fontWeight: 600,
                         cursor: 'pointer',

@@ -7,22 +7,45 @@ interface AmplePreloaderProps {
 
 export const AmplePreloader: React.FC<AmplePreloaderProps> = ({
   onFinish,
-  minDurationMs = 2100
+  minDurationMs = 1200
 }) => {
+  const alreadyPreloaded = typeof window !== 'undefined' && Boolean(sessionStorage.getItem('ample_preloaded'));
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const [isMounted, setIsMounted] = useState(true);
+  const [isMounted, setIsMounted] = useState(!alreadyPreloaded);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (alreadyPreloaded) {
+      if (onFinish) onFinish();
+      return;
+    }
+
+    const finish = () => {
       setIsFadingOut(true);
+      try { sessionStorage.setItem('ample_preloaded', 'true'); } catch { }
       setTimeout(() => {
         setIsMounted(false);
         if (onFinish) onFinish();
-      }, 600); // match transition duration
-    }, minDurationMs);
+      }, 500);
+    };
 
-    return () => clearTimeout(timer);
-  }, [minDurationMs, onFinish]);
+    const timer = setTimeout(finish, minDurationMs);
+
+    const dismissEarly = () => {
+      clearTimeout(timer);
+      finish();
+    };
+
+    window.addEventListener('wheel', dismissEarly, { passive: true, once: true });
+    window.addEventListener('pointerdown', dismissEarly, { passive: true, once: true });
+    window.addEventListener('keydown', dismissEarly, { passive: true, once: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('wheel', dismissEarly);
+      window.removeEventListener('pointerdown', dismissEarly);
+      window.removeEventListener('keydown', dismissEarly);
+    };
+  }, [minDurationMs, onFinish, alreadyPreloaded]);
 
   if (!isMounted) return null;
 

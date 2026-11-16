@@ -335,7 +335,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: '0.65rem',
-          backgroundColor: toast.type === 'error' ? '#ef4444' : toast.type === 'info' ? 'var(--navy-primary)' : '#059669',
+          backgroundColor: toast.type === 'error' ? '#8b93a8' : toast.type === 'info' ? 'var(--navy-primary)' : '#233a78',
           color: '#ffffff',
           padding: '0.75rem 1.4rem',
           borderRadius: '9999px',
@@ -478,7 +478,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--navy-dark)' }}>
             {trainees.length > 0 ? trainees.length * 568 : 2842}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.2rem', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.75rem', color: '#233a78', marginTop: '0.2rem', fontWeight: 600 }}>
             ↑ 14% enrollment growth
           </div>
         </div>
@@ -486,9 +486,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>STUDENT INQUIRIES</span>
-            <MessageSquare size={18} color="#d97706" />
+            <MessageSquare size={18} color="#576488" />
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#d97706' }}>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#576488' }}>
             {enquiries.filter(e => e.status === 'pending').length} Questions
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
@@ -499,9 +499,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <div className="ample-card" style={{ padding: '1.4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>TAPE-OUTS VERIFIED</span>
-            <Cpu size={18} color="#059669" />
+            <Cpu size={18} color="#233a78" />
           </div>
-          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#059669' }}>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#233a78' }}>
             {tapeouts.filter(t => t.status === 'Approved').length + 15} Designs
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
@@ -604,7 +604,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       {t.name}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {t.track} • {t.labHours} Lab Hrs • Score: <strong style={{ color: '#059669' }}>{t.topScore}%</strong>
+                      {t.track} • {t.labHours} Lab Hrs • Score: <strong style={{ color: '#233a78' }}>{t.topScore}%</strong>
                     </div>
                   </div>
 
@@ -614,9 +614,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       fontWeight: 700,
                       padding: '0.2rem 0.6rem',
                       borderRadius: '9999px',
-                      backgroundColor: t.interviewStatus === 'hired' ? '#ecfdf5' : 'var(--navy-light)',
-                      color: t.interviewStatus === 'hired' ? '#059669' : 'var(--navy-primary)',
-                      border: `1px solid ${t.interviewStatus === 'hired' ? '#a7f3d0' : 'var(--navy-border)'}`
+                      backgroundColor: t.interviewStatus === 'hired' ? '#eff2fa' : 'var(--navy-light)',
+                      color: t.interviewStatus === 'hired' ? '#233a78' : 'var(--navy-primary)',
+                      border: `1px solid ${t.interviewStatus === 'hired' ? '#b2c0e9' : 'var(--navy-border)'}`
                     }}>
                       {t.interviewStatus.toUpperCase()}
                     </span>
@@ -654,7 +654,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   Active cohort progress & verification completion
                 </p>
               </div>
-              <Cpu size={18} color="#059669" />
+              <Cpu size={18} color="#233a78" />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.86rem' }}>
@@ -671,20 +671,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Certification Sign-off Queue</span>
-                  <strong style={{ color: '#059669' }}>3 Trainees Pending</strong>
+                  <strong style={{ color: '#233a78' }}>3 Trainees Pending</strong>
                 </div>
                 <div style={{ height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '9999px', overflow: 'hidden' }}>
-                  <div style={{ width: '28%', height: '100%', backgroundColor: '#059669', borderRadius: '9999px' }} />
+                  <div style={{ width: '28%', height: '100%', backgroundColor: '#233a78', borderRadius: '9999px' }} />
                 </div>
               </div>
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Talent Evaluation Platform Health</span>
-                  <strong style={{ color: '#059669' }}>99.9% Uptime</strong>
+                  <strong style={{ color: '#233a78' }}>99.9% Uptime</strong>
                 </div>
                 <div style={{ height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '9999px', overflow: 'hidden' }}>
-                  <div style={{ width: '99%', height: '100%', backgroundColor: '#059669', borderRadius: '9999px' }} />
+                  <div style={{ width: '99%', height: '100%', backgroundColor: '#233a78', borderRadius: '9999px' }} />
                 </div>
               </div>
             </div>
@@ -778,9 +778,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         fontWeight: 700,
                         padding: '0.2rem 0.55rem',
                         borderRadius: '9999px',
-                        backgroundColor: '#ecfdf5',
-                        color: '#059669',
-                        border: '1px solid #a7f3d0'
+                        backgroundColor: '#eff2fa',
+                        color: '#233a78',
+                        border: '1px solid #b2c0e9'
                       }}>
                         <ShieldCheck size={12} />
                         {t.passportLevel}
@@ -792,8 +792,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         fontWeight: 700,
                         padding: '0.2rem 0.6rem',
                         borderRadius: '9999px',
-                        backgroundColor: t.interviewStatus === 'hired' ? '#ecfdf5' : t.interviewStatus === 'referred' ? '#fffbeb' : 'var(--navy-light)',
-                        color: t.interviewStatus === 'hired' ? '#059669' : t.interviewStatus === 'referred' ? '#d97706' : 'var(--navy-primary)'
+                        backgroundColor: t.interviewStatus === 'hired' ? '#eff2fa' : t.interviewStatus === 'referred' ? '#f3f4f7' : 'var(--navy-light)',
+                        color: t.interviewStatus === 'hired' ? '#233a78' : t.interviewStatus === 'referred' ? '#576488' : 'var(--navy-primary)'
                       }}>
                         {t.interviewStatus.replace('_', ' ').toUpperCase()}
                       </span>
@@ -816,7 +816,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           Fast-Track to Interview
                         </button>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.75rem', color: '#233a78', fontWeight: 600 }}>
                           ✓ Pipeline Active
                         </span>
                       )}
@@ -869,9 +869,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                     <span>PDK: <strong>{item.pdk}</strong></span>
                     <span>Area: <strong>{item.coreArea}</strong></span>
-                    <span>STA Slack: <strong style={{ color: item.staSlack.includes('MET') ? '#059669' : '#dc2626' }}>{item.staSlack}</strong></span>
-                    <span>DRC: <strong style={{ color: '#059669' }}>{item.drcStatus}</strong></span>
-                    <span>Status: <strong style={{ color: item.status === 'Approved' ? '#059669' : '#d97706' }}>{item.status}</strong></span>
+                    <span>STA Slack: <strong style={{ color: item.staSlack.includes('MET') ? '#233a78' : '#6f7993' }}>{item.staSlack}</strong></span>
+                    <span>DRC: <strong style={{ color: '#233a78' }}>{item.drcStatus}</strong></span>
+                    <span>Status: <strong style={{ color: item.status === 'Approved' ? '#233a78' : '#576488' }}>{item.status}</strong></span>
                   </div>
                 </div>
 
@@ -985,7 +985,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         alignItems: 'center',
                         gap: '0.2rem',
                         fontSize: '0.78rem',
-                        color: '#dc2626',
+                        color: '#6f7993',
                         backgroundColor: '#ffffff',
                         border: '1px solid var(--border-subtle)',
                         borderRadius: '6px',
@@ -1056,7 +1056,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                 <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Capacity:</span>
-                  <strong style={{ color: '#059669' }}>{c.enrolledCount} / {c.seatLimit} Seats Filled</strong>
+                  <strong style={{ color: '#233a78' }}>{c.enrolledCount} / {c.seatLimit} Seats Filled</strong>
                 </div>
               </div>
             ))}
@@ -1157,8 +1157,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             padding: '0.3rem 0.65rem',
                             borderRadius: '9999px',
                             border: '1px solid var(--border-strong)',
-                            backgroundColor: enq.status === 'resolved' ? '#ecfdf5' : enq.status === 'in_progress' ? '#eff6ff' : '#fffbeb',
-                            color: enq.status === 'resolved' ? '#059669' : enq.status === 'in_progress' ? '#1d4ed8' : '#b45309',
+                            backgroundColor: enq.status === 'resolved' ? '#eff2fa' : enq.status === 'in_progress' ? '#eff6ff' : '#f3f4f7',
+                            color: enq.status === 'resolved' ? '#233a78' : enq.status === 'in_progress' ? '#30498f' : '#4a5573',
                             cursor: 'pointer'
                           }}
                         >
@@ -1189,8 +1189,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                     {/* Official Faculty Reply (if present) */}
                     {enq.reply && (
-                      <div style={{ backgroundColor: '#ecfdf5', borderLeft: '4px solid #059669', padding: '0.85rem 1.1rem', borderRadius: '0 10px 10px 0' }}>
-                        <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#059669', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <div style={{ backgroundColor: '#eff2fa', borderLeft: '4px solid #233a78', padding: '0.85rem 1.1rem', borderRadius: '0 10px 10px 0' }}>
+                        <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#233a78', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                           <Check size={14} />
                           Faculty Architect Response {enq.repliedAt ? `• ${new Date(enq.repliedAt).toLocaleDateString()}` : ''}
                         </div>
@@ -1762,13 +1762,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </div>
               <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '10px' }}>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>STA Sign-off Slack</div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: inspectingTapeout.staSlack.includes('MET') ? '#059669' : '#dc2626' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: inspectingTapeout.staSlack.includes('MET') ? '#233a78' : '#6f7993' }}>
                   {inspectingTapeout.staSlack}
                 </div>
               </div>
               <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '10px' }}>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Physical DRC</div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#059669' }}>{inspectingTapeout.drcStatus}</div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#233a78' }}>{inspectingTapeout.drcStatus}</div>
               </div>
             </div>
 
@@ -1779,15 +1779,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               padding: '1.25rem',
               marginBottom: '1.5rem',
               textAlign: 'center',
-              border: '1px solid #1e3a8a'
+              border: '1px solid #213262'
             }}>
-              <div style={{ fontSize: '0.78rem', color: '#93c5fd', fontFamily: 'var(--font-mono)', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.78rem', color: '#5f7cca', fontFamily: 'var(--font-mono)', marginBottom: '0.5rem' }}>
                 GDSII Hierarchical Cell Layout & Standard Cell Tracks (SkyWater 130nm)
               </div>
               <div style={{
                 width: '180px',
                 height: '180px',
-                border: '2px solid #38bdf8',
+                border: '2px solid #5a7bd6',
                 margin: '0 auto',
                 backgroundColor: '#061c38',
                 borderRadius: '8px',
@@ -1795,13 +1795,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(56, 189, 248, 0.2)'
+                boxShadow: '0 0 20px rgba(90, 123, 214, 0.2)'
               }}>
-                <Cpu size={36} color="#38bdf8" />
+                <Cpu size={36} color="#5a7bd6" />
                 <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 700, marginTop: '0.4rem' }}>
                   {inspectingTapeout.project.split(' ')[0]}
                 </span>
-                <span style={{ fontSize: '0.62rem', color: '#10b981' }}>
+                <span style={{ fontSize: '0.62rem', color: '#2d4b9c' }}>
                   ✔ DRC / LVS MATCHED
                 </span>
               </div>
@@ -1810,7 +1810,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {/* Action Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Status: <strong style={{ color: inspectingTapeout.status === 'Approved' ? '#059669' : '#d97706' }}>{inspectingTapeout.status}</strong>
+                Status: <strong style={{ color: inspectingTapeout.status === 'Approved' ? '#233a78' : '#576488' }}>{inspectingTapeout.status}</strong>
               </div>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button type="button" onClick={() => setInspectingTapeout(null)} className="ample-btn-secondary">

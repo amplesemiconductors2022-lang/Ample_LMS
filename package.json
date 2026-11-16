@@ -1,7 +1,7 @@
 {
   "name": "learn-ample",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,green\" \"node server/server.js\" \"vite\"",
@@ -10,7 +10,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "start": "NODE_ENV=production node server/server.js",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

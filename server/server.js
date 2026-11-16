@@ -5,12 +5,30 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import { createStore } from './services/store.js';
-import { getEmailStatus, sendEmail, escapeHtml } from './services/email.js';
+import { getEmailStatus, sendEmail, sendVerificationEmail, escapeHtml } from './services/email.js';
 import { getMediaStatus, createCloudinarySignature } from './services/media.js';
 import { getOAuthProviders, getAuthorizeUrl, exchangeOAuthCode, verifyOAuthState, getBaseUrl } from './services/oauth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load .env configuration
+const envPath = path.resolve(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  try {
+    const raw = fs.readFileSync(envPath, 'utf8');
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq > 0) {
+        const k = trimmed.slice(0, eq).trim();
+        const v = trimmed.slice(eq + 1).trim();
+        process.env[k] = v;
+      }
+    }
+  } catch { }
+}
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -20,8 +38,11 @@ const isProd = process.env.NODE_ENV === 'production';
 const distDir = path.join(__dirname, '..', 'dist');
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1); // correct client IPs behind Vercel / reverse proxies (rate limiting)
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'");
+  if (isProd) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
@@ -639,6 +660,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     return res.status(401).json({ error: 'Incorrect email or password.' });
   }
 
+  if (user.isVerified === false) {
+    return res.status(403).json({
+      error: 'Please verify your email address to log in.',
+      requiresVerification: true,
+      email: user.email
+    });
+  }
+
   const { password: _, ...userSafe } = user;
   res.json({
     user: userSafe,
@@ -657,64 +686,170 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
   const existing = (data.users || []).find(u => u.email.toLowerCase() === cleanEmail);
-  if (existing) {
+  if (existing && existing.isVerified !== false) {
     return res.status(409).json({ error: 'An account with this email already exists. Please sign in.' });
   }
 
-  const newUser = {
-    id: 'usr-' + Date.now(),
-    name: name.trim(),
-    email: cleanEmail,
-    password: hashPassword(password || crypto.randomBytes(9).toString('hex')),
-    role: 'trainee',
-    avatar: '',
-    campus: campus || 'Bengaluru Innovation HQ',
-    targetTrack: targetTrack || 'VLSI Physical Design & STA',
-    bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
-    githubUrl: '',
-    linkedinUrl: '',
-    passportLevel: 'Enrolled Trainee',
-    enrolledCourseIds: ['course-vlsi-01'],
-    completedLessonIds: [],
-    labHours: 0,
-    streakDays: 1,
-    topScore: 0,
-    createdAt: new Date().toISOString()
-  };
+  const code = String(crypto.randomInt(100000, 1000000));
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
 
-  data.users = data.users || [];
-  data.users.unshift(newUser);
+  let targetUser = existing;
+  if (!targetUser) {
+    targetUser = {
+      id: 'usr-' + Date.now(),
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashPassword(password || crypto.randomBytes(9).toString('hex')),
+      role: 'trainee',
+      avatar: '',
+      campus: campus || 'Bengaluru',
+      targetTrack: targetTrack || 'VLSI',
+      bio: 'Semiconductor engineering trainee at Ample Semiconductors Academy.',
+      githubUrl: '',
+      linkedinUrl: '',
+      passportLevel: 'Enrolled Trainee',
+      enrolledCourseIds: ['course-vlsi-01'],
+      completedLessonIds: [],
+      labHours: 0,
+      streakDays: 1,
+      topScore: 0,
+      createdAt: new Date().toISOString(),
+      isVerified: false,
+      verificationCode: code,
+      verificationToken: token,
+      verificationTokenExpiry: expiry,
+    };
 
-  // Also add to trainees roster for admin tracking!
-  data.trainees = data.trainees || [];
-  data.trainees.unshift({
-    id: 'TR-' + (100 + data.trainees.length + 1),
-    name: newUser.name,
-    email: newUser.email,
-    track: newUser.targetTrack,
-    progress: 5,
-    labHours: 0,
-    streak: 1,
-    passportLevel: newUser.passportLevel,
-    interviewStatus: 'under_review',
-    topScore: 0
-  });
+    data.users = data.users || [];
+    data.users.unshift(targetUser);
+
+    data.trainees = data.trainees || [];
+    data.trainees.unshift({
+      id: 'TR-' + (100 + data.trainees.length + 1),
+      name: targetUser.name,
+      email: targetUser.email,
+      track: targetUser.targetTrack,
+      progress: 5,
+      labHours: 0,
+      streak: 1,
+      passportLevel: targetUser.passportLevel,
+      interviewStatus: 'under_review',
+      topScore: 0
+    });
+  } else {
+    targetUser.name = name.trim();
+    if (password) targetUser.password = hashPassword(password);
+    targetUser.campus = campus || targetUser.campus || 'Bengaluru';
+    targetUser.targetTrack = targetTrack || targetUser.targetTrack || 'VLSI';
+    targetUser.verificationCode = code;
+    targetUser.verificationToken = token;
+    targetUser.verificationTokenExpiry = expiry;
+  }
 
   await saveStore(data);
 
-  // Non-blocking welcome email via Brevo (if configured)
-  sendEmail({
-    to: newUser.email,
-    toName: newUser.name,
-    subject: 'Welcome to Ample LMS',
-    htmlContent: `<p>Hi ${escapeHtml(newUser.name)},</p><p>Your Ample LMS account for <strong>${escapeHtml(newUser.targetTrack)}</strong> is now active.</p>`,
-    textContent: `Hi ${newUser.name}, your Ample LMS account for ${newUser.targetTrack} is now active.`,
-  }).catch((err) => console.warn('[email] Welcome email failed:', err.message));
+  // Send verification email via Brevo
+  const baseUrl = process.env.APP_URL || 'http://localhost:5174';
+  const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(cleanEmail)}`;
+  sendVerificationEmail({
+    to: cleanEmail,
+    name: targetUser.name,
+    code,
+    verificationUrl,
+  }).catch((err) => console.warn('[Brevo Error]:', err.message));
 
-  const { password: _, ...userSafe } = newUser;
   res.status(201).json({
+    success: true,
+    requiresVerification: true,
+    email: cleanEmail,
+    message: `We sent a 6-digit verification code to ${cleanEmail}. Please enter it to activate your account.`
+  });
+});
+
+// Verify Email
+app.post('/api/auth/verify-email', async (req, res) => {
+  const data = await readStore();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const code = String(req.body.code || '').trim();
+  const token = String(req.body.token || '').trim();
+
+  let user = null;
+  if (token) {
+    user = (data.users || []).find(u => u.verificationToken === token && (!u.verificationTokenExpiry || new Date(u.verificationTokenExpiry) > new Date()));
+  } else if (email && code) {
+    user = (data.users || []).find(u => u.email.toLowerCase() === email);
+    if (!user) return res.status(400).json({ error: 'User not found. Please register first.' });
+    if (user.isVerified) {
+      const { password: _, ...userSafe } = user;
+      return res.json({ success: true, user: userSafe, token: signToken(user), message: 'Account is already verified.' });
+    }
+    if (!user.verificationCode || user.verificationCode !== code) {
+      return res.status(400).json({ error: 'Invalid verification code. Please check your email or request a new code.' });
+    }
+    if (user.verificationTokenExpiry && new Date(user.verificationTokenExpiry) < new Date()) {
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
+    }
+  } else {
+    return res.status(400).json({ error: 'Email and 6-digit verification code are required.' });
+  }
+
+  if (!user) {
+    return res.status(400).json({ error: 'Invalid or expired verification token.' });
+  }
+
+  user.isVerified = true;
+  user.verificationCode = undefined;
+  user.verificationToken = undefined;
+  user.verificationTokenExpiry = undefined;
+
+  await saveStore(data);
+
+  const { password: _, ...userSafe } = user;
+  res.json({
+    success: true,
     user: userSafe,
-    token: signToken(newUser)
+    token: signToken(user),
+    message: 'Email successfully verified! Welcome to Ample LMS.'
+  });
+});
+
+// Resend Verification Code
+app.post('/api/auth/resend-verification', async (req, res) => {
+  const data = await readStore();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  const user = (data.users || []).find(u => u.email.toLowerCase() === email);
+  if (!user) {
+    return res.json({ success: true, message: 'If an account exists, a new code has been sent.' });
+  }
+  if (user.isVerified) {
+    return res.json({ success: true, message: 'Account is already verified. Please sign in.' });
+  }
+
+  const code = String(crypto.randomInt(100000, 1000000));
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+
+  user.verificationCode = code;
+  user.verificationToken = token;
+  user.verificationTokenExpiry = expiry;
+  await saveStore(data);
+
+  const baseUrl = process.env.APP_URL || 'http://localhost:5174';
+  const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(user.email)}`;
+
+  sendVerificationEmail({
+    to: user.email,
+    name: user.name,
+    code,
+    verificationUrl,
+  }).catch((err) => console.warn('[Brevo Error]:', err.message));
+
+  res.json({
+    success: true,
+    message: `A new 6-digit code has been sent to ${user.email}.`
   });
 });
 
@@ -1098,15 +1233,18 @@ app.post('/api/enquiries', requireAuth, async (req, res) => {
   if (!subject || !message) {
     return res.status(400).json({ error: 'Subject and message are required.' });
   }
+  if (subject.length > 200 || message.length > 4000) {
+    return res.status(400).json({ error: 'Subject must be under 200 characters and message under 4000.' });
+  }
 
   const newEnquiry = {
-    id: 'ENQ-' + Date.now().toString().slice(-6),
+    id: 'ENQ-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
     studentId: user.id,
     studentName: user.name,
     studentEmail: user.email,
     studentCampus: user.campus || 'Bengaluru Innovation HQ',
     subject,
-    track: req.body.track || user.targetTrack || 'VLSI Physical Design & STA',
+    track: String(req.body.track || user.targetTrack || 'VLSI Physical Design & STA').slice(0, 120),
     message,
     status: 'pending',
     createdAt: new Date().toISOString(),

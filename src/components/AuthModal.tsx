@@ -1,15 +1,16 @@
+import { useModalA11y } from '../hooks';
 import React, { useState, useEffect } from 'react';
 import {
   X, Mail, Lock, User as UserIcon,
-  ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff
+  ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff, CheckCircle2, RotateCw
 } from 'lucide-react';
 import { AmpleLMSLogo } from './AmpleLMSLogo';
-import { loginUser, signupUser } from '../api/client';
+import { loginUser, signupUser, verifyEmailApi, resendVerificationApi } from '../api/client';
 import type { User } from '../types';
 
 interface AuthModalProps {
   isOpen: boolean;
-  initialTab?: 'signin' | 'signup';
+  initialTab?: 'signin' | 'signup' | 'verify';
   onClose: () => void;
   onSuccess: (user: User, message: string) => void;
 }
@@ -20,19 +21,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>(initialTab);
+  const dialogRef = useModalA11y<HTMLDivElement>(onClose);
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup' | 'verify'>(initialTab);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [oauthProviders, setOauthProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
-
-  useEffect(() => {
-    if (!isOpen) return;
-    fetch('/api/auth/providers')
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => { if (data) setOauthProviders({ google: Boolean(data.google), github: Boolean(data.github) }); })
-      .catch(() => { });
-  }, [isOpen]);
+  const [infoMessage, setInfoMessage] = useState('');
 
   // Sign In Form state
   const [signInEmail, setSignInEmail] = useState('');
@@ -43,14 +37,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [signUpName, setSignUpName] = useState('');
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
-  const [signUpCampus, setSignUpCampus] = useState('Bengaluru Innovation HQ');
-  const [signUpTrack, setSignUpTrack] = useState('VLSI Physical Design & STA');
+  const [signUpCampus, setSignUpCampus] = useState<'Bengaluru' | 'Hyderabad'>('Bengaluru');
+  const [signUpTrack, setSignUpTrack] = useState<'VLSI' | 'Embedded Systems' | 'AIML'>('VLSI');
+
+  // Email Verification Form state
+  const [verificationCode, setVerificationCode] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+      setErrorMessage('');
+      setInfoMessage('');
+    }
+  }, [isOpen, initialTab]);
 
   if (!isOpen) return null;
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setInfoMessage('');
     if (!signInEmail.trim()) {
       setErrorMessage('Please enter your email address.');
       return;
@@ -62,7 +68,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onSuccess(user, `Welcome back, ${user.name}!`);
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid credentials. Please verify your email & password.');
+      if (err.requiresVerification || (err.message && err.message.toLowerCase().includes('verify your email'))) {
+        setSignUpEmail(signInEmail);
+        setActiveTab('verify');
+        setInfoMessage('Please verify your email to continue. Enter the 6-digit code sent to your inbox.');
+      } else {
+        setErrorMessage(err.message || 'Invalid credentials. Please verify your email & password.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +83,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setInfoMessage('');
     if (!signUpName.trim() || !signUpEmail.trim()) {
       setErrorMessage('Please complete all required fields.');
       return;
@@ -78,17 +91,61 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     setIsLoading(true);
     try {
-      const { user } = await signupUser({
+      const res = await signupUser({
         name: signUpName,
         email: signUpEmail,
         password: signUpPassword,
         campus: signUpCampus,
         targetTrack: signUpTrack
       });
-      onSuccess(user, `Welcome to Ample LMS, ${user.name}! Your account is now active.`);
-      onClose();
+
+      if (res.requiresVerification) {
+        setActiveTab('verify');
+        setVerificationCode('');
+        setInfoMessage(res.message || `We sent a 6-digit verification code to ${signUpEmail}. Please check your inbox and Spam folder.`);
+      } else if (res.user) {
+        onSuccess(res.user, `Welcome to Ample LMS, ${res.user.name}! Your account is now active.`);
+        onClose();
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Sign up could not be completed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setInfoMessage('');
+    const cleanCode = verificationCode.trim();
+    if (!cleanCode || cleanCode.length < 6) {
+      setErrorMessage('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await verifyEmailApi({ email: signUpEmail, code: cleanCode });
+      onSuccess(res.user, `Email verified! Welcome to Ample LMS, ${res.user.name}.`);
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid or expired verification code. Please check and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!signUpEmail) return;
+    setErrorMessage('');
+    setInfoMessage('Sending a new code via Brevo...');
+    setIsLoading(true);
+    try {
+      const res = await resendVerificationApi(signUpEmail);
+      setInfoMessage(res.message || 'A new 6-digit verification code has been sent to your email inbox.');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Could not resend code. Please try again in a moment.');
     } finally {
       setIsLoading(false);
     }
@@ -113,17 +170,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Ample LMS Authentication"
+        tabIndex={-1}
+        className="auth-modal-dialog"
         style={{
+          outline: 'none',
           backgroundColor: '#ffffff',
-          borderRadius: '24px',
+          borderRadius: '20px',
           width: '100%',
-          maxWidth: '520px',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-          padding: '2.25rem 2rem',
+          maxWidth: '460px',
+          height: '525px',
+          maxHeight: '94vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '1.35rem 1.6rem 1.1rem',
           boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
           border: '1px solid var(--border-subtle, #e2e8f0)',
-          position: 'relative'
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
         {/* Close Button */}
@@ -131,445 +199,521 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '1.5rem',
-            right: '1.5rem',
+            top: '0.95rem',
+            right: '1rem',
             background: 'none',
             border: 'none',
             color: 'var(--text-muted, #64748b)',
             cursor: 'pointer',
-            padding: '0.4rem',
+            padding: '0.35rem',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'background-color 0.15s ease'
+            transition: 'background-color 0.15s ease',
+            zIndex: 10
           }}
           aria-label="Close dialog"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        {/* Brand Header with End-Frame Ample LMS Logo */}
-        <div style={{ marginBottom: '1.75rem', textAlign: 'center' }}>
-          <AmpleLMSLogo variant="vertical" size="lg" showSubtitle={true} />
-          <h2 style={{
-            fontSize: '1.45rem',
-            fontWeight: 800,
-            color: 'var(--navy-dark, #0f214a)',
-            marginTop: '1rem',
-            marginBottom: '0.25rem'
-          }}>
-            {activeTab === 'signin' ? 'Sign in to Your Silicon Account' : 'Create Your Ample LMS Account'}
-          </h2>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary, #475569)', maxWidth: '380px', margin: '0 auto' }}>
-            {activeTab === 'signin'
-              ? 'Access semiconductor courses, campus cohorts, and industry certifications.'
-              : 'Join the industry-standard academy mentored by practicing chip architects.'}
-          </p>
-        </div>
-
-        {/* Tab Toggle Pill Selector */}
-        <div style={{
-          display: 'flex',
-          backgroundColor: 'var(--bg-secondary, #f8fafc)',
-          padding: '0.25rem',
-          borderRadius: '9999px',
-          border: '1px solid var(--border-subtle, #e2e8f0)',
-          marginBottom: '1.5rem',
-          marginTop: '1.25rem'
-        }}>
-          <button
-            type="button"
-            onClick={() => { setActiveTab('signin'); setErrorMessage(''); }}
-            style={{
-              flex: 1,
-              padding: '0.5rem 0',
-              borderRadius: '9999px',
-              border: 'none',
-              backgroundColor: activeTab === 'signin' ? '#ffffff' : 'transparent',
-              color: activeTab === 'signin' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
-              fontWeight: activeTab === 'signin' ? 700 : 500,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-              boxShadow: activeTab === 'signin' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => { setActiveTab('signup'); setErrorMessage(''); }}
-            style={{
-              flex: 1,
-              padding: '0.5rem 0',
-              borderRadius: '9999px',
-              border: 'none',
-              backgroundColor: activeTab === 'signup' ? '#ffffff' : 'transparent',
-              color: activeTab === 'signup' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
-              fontWeight: activeTab === 'signup' ? 700 : 500,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-              boxShadow: activeTab === 'signup' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-          >
-            Create Account
-          </button>
-        </div>
-
-        {/* Error Alert */}
-        {errorMessage && (
-          <div style={{
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#b91c1c',
-            borderRadius: '12px',
-            padding: '0.65rem 0.9rem',
-            marginBottom: '1.25rem',
-            fontSize: '0.82rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-            <span>{errorMessage}</span>
+        {/* Top Section: Brand Header & Tabs */}
+        <div>
+          <div style={{ textAlign: 'center', marginBottom: '0.65rem' }}>
+            <AmpleLMSLogo variant="vertical" size="md" showSubtitle={true} />
+            <h2 style={{
+              fontSize: '1.22rem',
+              fontWeight: 800,
+              color: 'var(--navy-dark, #0f214a)',
+              marginTop: '0.45rem',
+              marginBottom: '0.15rem'
+            }}>
+              {activeTab === 'signin'
+                ? 'Sign in to Your Silicon Account'
+                : activeTab === 'signup'
+                  ? 'Create Your Ample LMS Account'
+                  : 'Verify Your Email Address'}
+            </h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #475569)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.35 }}>
+              {activeTab === 'signin'
+                ? 'Access semiconductor courses, campus cohorts, and certifications.'
+                : activeTab === 'signup'
+                  ? ""
+                  : `Enter the 6-digit code sent to ${signUpEmail || 'your email'}`}
+            </p>
           </div>
-        )}
 
-        {/* SIGN IN FORM */}
-        {activeTab === 'signin' && (
-          <form onSubmit={handleSignInSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <div>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                Email Address
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g., varun.reddy@gmail.com"
-                  value={signInEmail}
-                  onChange={(e) => setSignInEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.9rem 0.65rem 2.4rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.88rem',
-                    outline: 'none',
-                    transition: 'border-color 0.15s ease'
-                  }}
-                />
-              </div>
+          {/* Tab Selector (Sign In vs Create Account) */}
+          {activeTab !== 'verify' && (
+            <div style={{
+              display: 'flex',
+              backgroundColor: 'var(--bg-secondary, #f8fafc)',
+              padding: '0.2rem',
+              borderRadius: '9999px',
+              border: '1px solid var(--border-subtle, #e2e8f0)',
+              marginBottom: '0.85rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => { setActiveTab('signin'); setErrorMessage(''); setInfoMessage(''); }}
+                style={{
+                  flex: 1,
+                  padding: '0.38rem 0',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  backgroundColor: activeTab === 'signin' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'signin' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
+                  fontWeight: activeTab === 'signin' ? 700 : 500,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'signin' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  transition: 'all 0.18s ease'
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab('signup'); setErrorMessage(''); setInfoMessage(''); }}
+                style={{
+                  flex: 1,
+                  padding: '0.38rem 0',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  backgroundColor: activeTab === 'signup' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'signup' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
+                  fontWeight: activeTab === 'signup' ? 700 : 500,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'signup' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  transition: 'all 0.18s ease'
+                }}
+              >
+                Create Account
+              </button>
             </div>
+          )}
 
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)' }}>
-                  Password
+          {/* Feedback Alerts */}
+          {errorMessage && (
+            <div style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fee2e2',
+              color: '#991b1b',
+              borderRadius: '9px',
+              padding: '0.45rem 0.75rem',
+              marginBottom: '0.7rem',
+              fontSize: '0.78rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem'
+            }}>
+              <AlertCircle size={14} style={{ flexShrink: 0 }} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {infoMessage && !errorMessage && (
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #dbeafe',
+              color: '#1e40af',
+              borderRadius: '9px',
+              padding: '0.45rem 0.75rem',
+              marginBottom: '0.7rem',
+              fontSize: '0.78rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem'
+            }}>
+              <CheckCircle2 size={14} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1 }}>{infoMessage}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Middle Section: Active Form with Flex Fill */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* TAB 1: SIGN IN */}
+          {activeTab === 'signin' && (
+            <form onSubmit={handleSignInSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.22rem' }}>
+                  Email Address
                 </label>
-                <button
-                  type="button"
-                  onClick={() => alert('For administrator access, use admin@amplesemi.com with password: adminpassword (or demo). For trainees, use your registered credentials.')}
-                  style={{ background: 'none', border: 'none', fontSize: '0.75rem', color: 'var(--navy-primary, #244092)', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  Forgot?
-                </button>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={15} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g., rahul@ample.com"
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.52rem 0.85rem 0.52rem 2.25rem',
+                      borderRadius: '9px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.86rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
               </div>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.22rem' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)' }}>
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => alert('Demo Credentials: Use admin@ample.com / demo or rahul@ample.com / demo.')}
+                    style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--navy-primary, #244092)', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Forgot?
+                  </button>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={15} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter account password (or demo)"
+                    value={signInPassword}
+                    onChange={(e) => setSignInPassword(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.52rem 2.25rem 0.52rem 2.25rem',
+                      borderRadius: '9px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.86rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.8rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--text-muted, #64748b)',
+                      padding: 0
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.05rem' }}>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your account password"
-                  value={signInPassword}
-                  onChange={(e) => setSignInPassword(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 2.4rem 0.65rem 2.4rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.88rem',
-                    outline: 'none'
-                  }}
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(p => !p)}
-                  style={{
-                    position: 'absolute',
-                    right: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--text-muted, #64748b)',
-                    padding: 0
-                  }}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+                <label htmlFor="rememberMe" style={{ fontSize: '0.78rem', color: 'var(--text-secondary, #475569)', cursor: 'pointer' }}>
+                  Stay signed in on this workstation
+                </label>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                style={{ cursor: 'pointer' }}
-              />
-              <label htmlFor="rememberMe" style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #475569)', cursor: 'pointer' }}>
-                Stay signed in on this workstation
-              </label>
-            </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="ample-btn-primary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  padding: '0.65rem',
+                  fontSize: '0.88rem',
+                  marginTop: '0.4rem',
+                  cursor: isLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isLoading ? 'Verifying Credentials...' : 'Sign In to Ample LMS'}
+                {!isLoading && <ArrowRight size={15} />}
+              </button>
+            </form>
+          )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="ample-btn-primary"
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                padding: '0.75rem',
-                fontSize: '0.92rem',
-                marginTop: '0.4rem'
-              }}
-            >
-              {isLoading ? 'Verifying Credentials...' : 'Sign In to Ample LMS'}
-              {!isLoading && <ArrowRight size={16} />}
-            </button>
-          </form>
-        )}
+          {/* TAB 2: CREATE ACCOUNT */}
+          {activeTab === 'signup' && (
+            <form onSubmit={handleSignUpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div>
+                <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.18rem' }}>
+                  Full Name *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <UserIcon size={14} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Varun Reddy"
+                    value={signUpName}
+                    onChange={(e) => setSignUpName(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.48rem 0.8rem 0.48rem 2.2rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.84rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
 
-        {/* SIGN UP FORM */}
-        {activeTab === 'signup' && (
-          <form onSubmit={handleSignUpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <div>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                Full Name *
-              </label>
-              <div style={{ position: 'relative' }}>
-                <UserIcon size={16} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <div>
+                <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.18rem' }}>
+                  Work or University Email *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={14} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g., yourname@domain.com"
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.48rem 0.8rem 0.48rem 2.2rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.84rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.55rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.18rem' }}>
+                    Campus Location
+                  </label>
+                  <select
+                    value={signUpCampus}
+                    onChange={(e) => setSignUpCampus(e.target.value as 'Bengaluru' | 'Hyderabad')}
+                    style={{
+                      width: '100%',
+                      padding: '0.48rem 0.55rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.8rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.18rem' }}>
+                    Target Discipline
+                  </label>
+                  <select
+                    value={signUpTrack}
+                    onChange={(e) => setSignUpTrack(e.target.value as 'VLSI' | 'Embedded Systems' | 'AIML')}
+                    style={{
+                      width: '100%',
+                      padding: '0.48rem 0.55rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.8rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="VLSI">VLSI</option>
+                    <option value="Embedded Systems">Embedded Systems</option>
+                    <option value="AIML">AIML</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.18rem' }}>
+                  Set Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={14} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Minimum 6 characters"
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.48rem 2.2rem 0.48rem 2.2rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      fontSize: '0.84rem',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--text-muted, #64748b)',
+                      padding: 0
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="ample-btn-primary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  padding: '0.62rem',
+                  fontSize: '0.86rem',
+                  marginTop: '0.25rem',
+                  cursor: isLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isLoading ? 'Sending Brevo Code...' : 'Create Account & Send Code'}
+                {!isLoading && <ArrowRight size={15} />}
+              </button>
+            </form>
+          )}
+
+          {/* TAB 3: VERIFY EMAIL (6-DIGIT CODE) */}
+          {activeTab === 'verify' && (
+            <form onSubmit={handleVerifySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', textAlign: 'center' }}>
+              <div style={{
+                background: 'var(--bg-secondary, #f8fafc)',
+                border: '2px dashed var(--navy-primary, #244092)',
+                borderRadius: '12px',
+                padding: '0.9rem 1rem'
+              }}>
+                <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--navy-primary, #244092)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem' }}>
+                  Enter 6-Digit Brevo Verification Code
+                </div>
                 <input
                   type="text"
+                  maxLength={6}
                   required
-                  placeholder="e.g., Varun Reddy"
-                  value={signUpName}
-                  onChange={(e) => setSignUpName(e.target.value)}
+                  autoFocus
+                  placeholder="123456"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   style={{
                     width: '100%',
-                    padding: '0.65rem 0.9rem 0.65rem 2.4rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.88rem',
-                    outline: 'none'
+                    maxWidth: '220px',
+                    textAlign: 'center',
+                    fontSize: '1.65rem',
+                    fontWeight: 800,
+                    letterSpacing: '8px',
+                    fontFamily: 'var(--font-mono, monospace)',
+                    color: 'var(--navy-dark, #0f214a)',
+                    border: '1px solid var(--border-strong, #cbd5e1)',
+                    borderRadius: '8px',
+                    padding: '0.35rem 0.5rem',
+                    outline: 'none',
+                    margin: '0 auto',
+                    display: 'block',
+                    backgroundColor: '#ffffff'
                   }}
                 />
               </div>
-            </div>
 
-            <div>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                Work or University Email *
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g., yourname@university.edu or @company.com"
-                  value={signUpEmail}
-                  onChange={(e) => setSignUpEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.9rem 0.65rem 2.4rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.88rem',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={isLoading || verificationCode.length < 6}
+                className="ample-btn-primary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  padding: '0.65rem',
+                  fontSize: '0.88rem',
+                  cursor: isLoading || verificationCode.length < 6 ? 'not-allowed' : 'pointer',
+                  opacity: verificationCode.length < 6 ? 0.75 : 1
+                }}
+              >
+                {isLoading ? 'Verifying Code...' : 'Verify Email & Complete Registration'}
+                {!isLoading && <ArrowRight size={15} />}
+              </button>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div>
-                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                  Campus Location
-                </label>
-                <select
-                  value={signUpCampus}
-                  onChange={(e) => setSignUpCampus(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.82rem'
-                  }}
-                >
-                  <option value="Bengaluru Innovation HQ">Bengaluru Innovation HQ</option>
-                  <option value="Hyderabad Innovation Lab">Hyderabad Innovation Lab</option>
-                  <option value="Virtual Engineering Hub">Virtual Engineering Hub</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                  Target Discipline
-                </label>
-                <select
-                  value={signUpTrack}
-                  onChange={(e) => setSignUpTrack(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.82rem'
-                  }}
-                >
-                  <option value="VLSI Physical Design & STA">VLSI Physical Design</option>
-                  <option value="SystemVerilog & UVM Verification">UVM Verification</option>
-                  <option value="Embedded Linux & RTOS">Embedded Linux / RTOS</option>
-                  <option value="TinyML & Edge AI Silicon">Edge AI & TinyML</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', display: 'block', marginBottom: '0.35rem' }}>
-                Set Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} color="var(--text-muted, #64748b)" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Minimum 6 characters"
-                  value={signUpPassword}
-                  onChange={(e) => setSignUpPassword(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 2.4rem 0.65rem 2.4rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    fontSize: '0.88rem',
-                    outline: 'none'
-                  }}
-                />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem', fontSize: '0.78rem' }}>
                 <button
                   type="button"
-                  onClick={() => setShowPassword(p => !p)}
+                  onClick={handleResendCode}
+                  disabled={isLoading}
                   style={{
-                    position: 'absolute',
-                    right: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
+                    color: 'var(--navy-primary, #244092)',
+                    fontWeight: 600,
                     cursor: 'pointer',
-                    color: 'var(--text-muted, #64748b)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
                     padding: 0
                   }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <RotateCw size={12} />
+                  Resend code
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('signin'); setErrorMessage(''); setInfoMessage(''); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted, #64748b)',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  Back to sign in
                 </button>
               </div>
-            </div>
+            </form>
+          )}
+        </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="ample-btn-primary"
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                padding: '0.75rem',
-                fontSize: '0.92rem',
-                marginTop: '0.4rem'
-              }}
-            >
-              {isLoading ? 'Creating Your Account...' : 'Create Account & Get Certified'}
-              {!isLoading && <ArrowRight size={16} />}
-            </button>
-          </form>
-        )}
-
-        {(oauthProviders.google || oauthProviders.github) && (
-          <div style={{ marginTop: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
-              <span style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle, #e2e8f0)' }} />
-              <span>or continue with</span>
-              <span style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle, #e2e8f0)' }} />
-            </div>
-            <div style={{ display: 'flex', gap: '0.55rem' }}>
-              {oauthProviders.google && (
-                <a
-                  href="/api/auth/oauth/google"
-                  style={{
-                    flex: 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0.6rem 0.9rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    backgroundColor: '#ffffff',
-                    color: 'var(--navy-dark, #0f214a)',
-                    fontSize: '0.84rem',
-                    fontWeight: 600,
-                    textDecoration: 'none'
-                  }}
-                >
-                  Google
-                </a>
-              )}
-              {oauthProviders.github && (
-                <a
-                  href="/api/auth/oauth/github"
-                  style={{
-                    flex: 1,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0.6rem 0.9rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    backgroundColor: '#ffffff',
-                    color: 'var(--navy-dark, #0f214a)',
-                    fontSize: '0.84rem',
-                    fontWeight: 600,
-                    textDecoration: 'none'
-                  }}
-                >
-                  GitHub
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Footer Guarantee */}
+        {/* Bottom Section: Verified Guarantee Badge */}
         <div style={{
-          marginTop: '1.5rem',
-          paddingTop: '1rem',
+          paddingTop: '0.6rem',
           borderTop: '1px solid var(--border-subtle, #e2e8f0)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '0.45rem',
-          fontSize: '0.76rem',
+          gap: '0.4rem',
+          fontSize: '0.72rem',
           color: 'var(--text-muted, #64748b)'
         }}>
-          <ShieldCheck size={14} color="#059669" />
+          <ShieldCheck size={13} color="#233a78" />
           <span>Ample Semiconductors Academy • Verified Industry Credentials</span>
         </div>
       </div>
     </div>
   );
 };
-

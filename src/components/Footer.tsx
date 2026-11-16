@@ -65,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   onClick={() => onNavigate('landing')}
                   style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#5a7bd6')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#cbd5e1')}
                 >
                   Platform Overview
@@ -75,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   onClick={() => onNavigate('catalog')}
                   style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#5a7bd6')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#cbd5e1')}
                 >
                   Silicon Courses & Syllabi
@@ -85,7 +85,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   onClick={() => onNavigate('dashboard')}
                   style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#5a7bd6')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#cbd5e1')}
                 >
                   Student LMS Dashboard
@@ -94,9 +94,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('admin')}
-                  style={{ background: 'none', border: 'none', color: '#38bdf8', fontWeight: 600, cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}
+                  style={{ background: 'none', border: 'none', color: '#5a7bd6', fontWeight: 600, cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#5a7bd6')}
                 >
                   Admin Management Console
                 </button>
@@ -111,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', fontSize: '0.84rem' }}>
               <div style={{ display: 'flex', gap: '0.6rem' }}>
-                <MapPin size={17} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <MapPin size={17} color="#5a7bd6" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <strong style={{ color: '#ffffff' }}>Bengaluru HQ:</strong>
                   <div style={{ color: '#94a3b8', lineHeight: 1.5, marginTop: '0.2rem' }}>
@@ -121,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </div>
 
               <div style={{ display: 'flex', gap: '0.6rem' }}>
-                <MapPin size={17} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <MapPin size={17} color="#5a7bd6" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <strong style={{ color: '#ffffff' }}>Hyderabad Innovation Lab:</strong>
                   <div style={{ color: '#94a3b8', lineHeight: 1.5, marginTop: '0.2rem' }}>
@@ -139,11 +139,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.84rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Mail size={16} color="#38bdf8" />
+                <Mail size={16} color="#5a7bd6" />
                 <span style={{ color: '#cbd5e1' }}>info@amplesemiconductors.com</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Phone size={16} color="#38bdf8" />
+                <Phone size={16} color="#5a7bd6" />
                 <span style={{ color: '#cbd5e1' }}>+91 96762 67614 / +91 95152 64762</span>
               </div>
               <div style={{ marginTop: '0.65rem' }}>
@@ -155,14 +155,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '0.4rem',
-                    color: '#38bdf8',
+                    color: '#5a7bd6',
                     fontWeight: 600,
                     textDecoration: 'none',
                     fontSize: '0.84rem',
                     transition: 'color 0.15s ease'
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#5a7bd6')}
                 >
                   <span>Visit Corporate Website</span>
                   <ExternalLink size={14} />

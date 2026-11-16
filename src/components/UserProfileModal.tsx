@@ -1,3 +1,4 @@
+import { useModalA11y } from '../hooks';
 import React, { useState } from 'react';
 import {
   X, User as UserIcon, Cpu, ShieldCheck,
@@ -27,6 +28,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onSignOut,
   onOpenDashboard
 }) => {
+  const dialogRef = useModalA11y<HTMLDivElement>(onClose);
   const [activeTab, setActiveTab] = useState<'profile' | 'certification' | 'enrolled'>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -104,7 +106,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Your profile"
+        tabIndex={-1}
         style={{
+          outline: 'none',
           backgroundColor: '#ffffff',
           borderRadius: '24px',
           width: '100%',
@@ -184,8 +192,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   {user.name}
                 </h3>
                 <span style={{
-                  backgroundColor: user.role === 'admin' ? '#fef3c7' : '#e0f2fe',
-                  color: user.role === 'admin' ? '#b45309' : '#0369a1',
+                  backgroundColor: user.role === 'admin' ? '#dce0e9' : '#e5ebf9',
+                  color: user.role === 'admin' ? '#4a5573' : '#213b83',
                   fontSize: '0.72rem',
                   fontWeight: 800,
                   padding: '0.15rem 0.55rem',
@@ -195,8 +203,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   {user.role === 'admin' ? 'Director / Admin' : 'Silicon Trainee'}
                 </span>
                 <span style={{
-                  backgroundColor: '#ecfdf5',
-                  color: '#059669',
+                  backgroundColor: '#eff2fa',
+                  color: '#233a78',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   padding: '0.15rem 0.55rem',
@@ -453,10 +461,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       padding: '0.5rem 0.85rem',
                       borderRadius: '9999px',
                       backgroundColor: '#fff1f2',
-                      border: '1px solid #fecdd3',
+                      border: '1px solid #e2e4e9',
                       fontSize: '0.78rem',
                       fontWeight: 600,
-                      color: '#e11d48',
+                      color: '#6d7791',
                       cursor: 'pointer'
                     }}
                   >
@@ -467,7 +475,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   {saveSuccess && (
-                    <span style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.82rem', color: '#233a78', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <Check size={14} /> Profile Saved!
                     </span>
                   )}
@@ -499,7 +507,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>CERTIFICATION STATUS</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#059669', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#233a78', marginTop: '0.2rem' }}>
                     Ample Certified
                   </div>
                 </div>
@@ -513,7 +521,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>LEARNING STREAK</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ea580c', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#606e96', marginTop: '0.2rem' }}>
                     {user.streakDays || 12} Days 🔥
                   </div>
                 </div>
@@ -532,7 +540,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 borderRadius: '16px',
                 padding: '1.5rem',
                 color: '#ffffff',
-                border: '1px solid #1e3a8a',
+                border: '1px solid #213262',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -540,7 +548,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 gap: '1rem'
               }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#38bdf8', fontSize: '0.78rem', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#5a7bd6', fontSize: '0.78rem', fontWeight: 700 }}>
                     <ShieldCheck size={16} />
                     AMPLE VERIFIED ENGINEERING CERTIFICATE
                   </div>

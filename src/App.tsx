@@ -19,7 +19,7 @@ const viewFromHash = (): View => {
   return NAV_VIEWS.includes(h) ? h : 'landing';
 };
 import { COURSES_DATA } from './data/coursesData';
-import { fetchCourses, fetchCurrentUser, enrollCourseApi, completeLessonApi } from './api/client';
+import { fetchCourses, fetchCurrentUser, enrollCourseApi, completeLessonApi, verifyEmailApi } from './api/client';
 import type { Course, UserProgress, User, Category } from './types';
 import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 
@@ -102,6 +102,27 @@ export const App: React.FC = () => {
       const msg = decodeURIComponent(rawHash.slice('#oauth_error='.length));
       showToast(msg || 'OAuth sign-in failed.', 'error');
       window.location.hash = 'landing';
+    } else if (rawHash.startsWith('#verify=')) {
+      const query = rawHash.slice(1);
+      const searchParams = new URLSearchParams(query);
+      const verifyToken = searchParams.get('verify') || '';
+      const verifyEmail = searchParams.get('email') || '';
+      if (verifyToken) {
+        showToast('Verifying your email address...', 'info');
+        verifyEmailApi({ token: verifyToken, email: verifyEmail })
+          .then(res => {
+            if (res.user) {
+              setCurrentUser(res.user);
+              localStorage.setItem('ample_current_user', JSON.stringify(res.user));
+              if (res.token) localStorage.setItem('ample_token', res.token);
+              showToast('Email verified successfully! Welcome to Ample LMS.', 'success');
+              handleNavigate('dashboard');
+            }
+          })
+          .catch(err => {
+            showToast(err.message || 'Verification link has expired. Please request a new code.', 'error');
+          });
+      }
     }
 
     fetchCourses().then(data => {
@@ -324,7 +345,7 @@ export const App: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '0.65rem',
-          backgroundColor: toast.type === 'error' ? '#ef4444' : toast.type === 'info' ? 'var(--navy-primary, #244092)' : '#059669',
+          backgroundColor: toast.type === 'error' ? '#8b93a8' : toast.type === 'info' ? 'var(--navy-primary, #244092)' : '#233a78',
           color: '#ffffff',
           padding: '0.75rem 1.4rem',
           borderRadius: '9999px',

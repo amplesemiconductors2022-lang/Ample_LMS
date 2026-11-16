@@ -36,3 +36,13 @@ npm run build      # type-checks, then builds to dist/
 npm start          # Express serves dist/ and /api on $PORT (default 5001)
 ```
 Or `docker build -t ample-lms . && docker run -p 5001:5001 ample-lms`. Health check: `GET /healthz` or `GET /api/health`.
+
+## Design system
+The UI uses navy, black and white shades only. Colours live as tokens in `src/index.css` (`--navy-*`, `--text-*`, `--bg-*`). Status states (success, warning, error) are told apart by icon, label and weight rather than hue. Please keep new UI to these tokens.
+
+## Quality checks
+```bash
+npm run typecheck  # TypeScript
+npm run smoke      # API auth and security-header checks (no database needed)
+```
+Hero media: `bg-video.mp4` is a 720p-class, audio-free loop under 1 MB. It is skipped for visitors with reduced-motion or Data Saver, who see the still poster instead.
