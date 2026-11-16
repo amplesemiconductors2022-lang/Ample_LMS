@@ -430,9 +430,9 @@
   "users": [
     {
       "id": "usr-1794812623949",
-      "name": "varun",
+      "name": "Varun Reddy",
       "email": "darkelectroff@gmail.com",
-      "password": "scrypt$62a26027662d68b0dca2e288c3c23256$3a5d9477553e4c79dcffd39fed7c0cf37d63d1b440a4080466b26ab4be8593fd3c5188aad6c3aede324312b4ec3c6b20044463b598e52c7950beeb92f756b6fd",
+      "password": "scrypt$d61f4a318b93b15c61666198150862c8$4f91a9c33f82ea1caf7f512ab1ca57efe533a70da93a4bc31b9098cd6dc34ea37f1187f024c6a1802c9bd683c6c7309af26fe8b1737f7f2655e5219073b64873",
       "role": "trainee",
       "avatar": "",
       "campus": "Bengaluru",
@@ -449,7 +449,10 @@
       "streakDays": 1,
       "topScore": 0,
       "createdAt": "2026-11-16T07:03:44.038Z",
-      "isVerified": true
+      "isVerified": true,
+      "verificationCode": "272649",
+      "verificationToken": "7f8f2d07d2a3919c604a18a4de8f145f2a46ed66a45d2451b1384613b55600b3",
+      "verificationTokenExpiry": "2026-11-17T07:19:15.198Z"
     },
     {
       "id": "usr-1794804905354",

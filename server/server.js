@@ -686,9 +686,6 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
   const existing = (data.users || []).find(u => u.email.toLowerCase() === cleanEmail);
-  if (existing && existing.isVerified !== false) {
-    return res.status(409).json({ error: 'An account with this email already exists. Please sign in.' });
-  }
 
   const code = String(crypto.randomInt(100000, 1000000));
   const token = crypto.randomBytes(32).toString('hex');
@@ -738,7 +735,7 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
       topScore: 0
     });
   } else {
-    targetUser.name = name.trim();
+    targetUser.name = name.trim() || targetUser.name;
     if (password) targetUser.password = hashPassword(password);
     targetUser.campus = campus || targetUser.campus || 'Bengaluru';
     targetUser.targetTrack = targetTrack || targetUser.targetTrack || 'VLSI';
@@ -752,6 +749,7 @@ app.post('/api/auth/signup', loginLimiter, async (req, res) => {
   // Send verification email via Brevo
   const baseUrl = process.env.APP_URL || 'http://localhost:5174';
   const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(cleanEmail)}`;
+  console.log(`[Auth] Verification email requested for ${cleanEmail} (code: ${code})`);
   sendVerificationEmail({
     to: cleanEmail,
     name: targetUser.name,
@@ -836,10 +834,7 @@ app.post('/api/auth/resend-verification', async (req, res) => {
 
   const user = (data.users || []).find(u => u.email.toLowerCase() === email);
   if (!user) {
-    return res.json({ success: true, message: 'If an account exists, a new code has been sent.' });
-  }
-  if (user.isVerified) {
-    return res.json({ success: true, message: 'Account is already verified. Please sign in.' });
+    return res.status(404).json({ error: 'No account found with this email. Please sign up.' });
   }
 
   const code = String(crypto.randomInt(100000, 1000000));
@@ -854,6 +849,7 @@ app.post('/api/auth/resend-verification', async (req, res) => {
   const baseUrl = process.env.APP_URL || 'http://localhost:5174';
   const verificationUrl = `${baseUrl}/#verify=${token}&email=${encodeURIComponent(user.email)}`;
 
+  console.log(`[Auth] Resending verification email to ${user.email} (code: ${code})`);
   sendVerificationEmail({
     to: user.email,
     name: user.name,
