@@ -26,13 +26,22 @@
 
 .hd-nav button:hover {
   color: #fff;
-  background: rgba(255, 255, 255, .1);
 }
 
 .hd-nav button[aria-current="page"] {
-  background: #fff;
-  color: var(--ink-hero);
+  background: transparent;
+  color: var(--ink-hero, #0b1b45) !important;
   font-weight: 700;
+}
+
+.hd-active-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .hd-logo {
@@ -378,10 +387,7 @@
   border-radius: 16px;
   overflow: hidden;
   will-change: transform, box-shadow;
-  animation: ccCardIn .48s cubic-bezier(.22, 1, .36, 1) both;
-  animation-delay: calc(var(--card-idx, 0) * 65ms);
   transition:
-    transform .38s cubic-bezier(.22, 1, .36, 1),
     box-shadow .38s cubic-bezier(.22, 1, .36, 1),
     border-color .28s ease;
 }

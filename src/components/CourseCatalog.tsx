@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Star, Clock, Users, ArrowRight, ArrowLeft,
   BookOpen, ChevronLeft, ChevronRight, Layers
@@ -98,9 +99,14 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
     const extraCount = course.toolsLearned.length - visibleTools.length;
 
     return (
-      <article
+      <motion.article
         key={course.id}
         className="cc-card"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-20px' }}
+        whileHover={{ y: -6, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } }}
+        transition={{ duration: 0.42, delay: Math.min((idx % 4) * 0.07, 0.28), ease: [0.16, 1, 0.3, 1] }}
         style={{ '--card-idx': idx } as React.CSSProperties}
       >
         <div className="cc-thumb">
@@ -124,18 +130,19 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
               {extraCount > 0 && <span>+{extraCount} more</span>}
             </div>
           </div>
-          <button
+          <motion.button
             className={`cc-cta${enrolled ? ' enrolled' : ''}`}
             onClick={() => onSelectCourse(course)}
+            whileTap={{ scale: 0.97 }}
           >
             {enrolled ? (
               <><BookOpen size={16} aria-hidden="true" />Continue course</>
             ) : (
               <>Enroll now<ArrowRight size={16} aria-hidden="true" /></>
             )}
-          </button>
+          </motion.button>
         </div>
-      </article>
+      </motion.article>
     );
   };
 
@@ -181,32 +188,38 @@ export const CourseCatalog: React.FC<CourseCatalogProps> = ({
                 </div>
 
                 <div className="cc-domain-actions">
-                  <button
+                  <motion.button
                     type="button"
                     className="cc-scroll-btn"
                     onClick={() => scrollRail(group.key, 'left')}
                     aria-label={`Scroll ${group.title} courses left`}
                     title="Scroll left"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
                   >
                     <ChevronLeft size={17} />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     className="cc-scroll-btn"
                     onClick={() => scrollRail(group.key, 'right')}
                     aria-label={`Scroll ${group.title} courses right`}
                     title="Scroll right"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
                   >
                     <ChevronRight size={17} />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     className="cc-viewall-btn"
                     onClick={() => selectCategory(group.key as Category)}
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.96 }}
                   >
                     View all
                     <ArrowRight size={14} aria-hidden="true" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 

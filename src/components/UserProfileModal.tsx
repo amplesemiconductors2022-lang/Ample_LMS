@@ -1,5 +1,6 @@
 import { useModalA11y } from '../hooks';
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, User as UserIcon, Cpu, ShieldCheck,
   Github, Linkedin,
@@ -51,8 +52,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setLinkedinUrl(user.linkedinUrl || '');
   }, [user]);
 
-  if (!isOpen) return null;
-
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -88,71 +87,82 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   );
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.65)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 99999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.25rem',
-        animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Your profile"
-        tabIndex={-1}
-        style={{
-          outline: 'none',
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          width: '100%',
-          maxWidth: '740px',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
-          border: '1px solid var(--border-subtle, #e2e8f0)',
-          position: 'relative'
-        }}
-      >
-        {/* Top Decorative Banner */}
-        <div style={{
-          backgroundColor: 'var(--navy-primary, #244092)',
-          padding: '1.75rem 2rem 1.25rem',
-          color: '#ffffff',
-          borderTopLeftRadius: '24px',
-          borderTopRightRadius: '24px',
-          position: 'relative'
-        }}>
-          <button
-            onClick={onClose}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(11, 27, 69, 0.65)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.25rem',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Your profile"
+            tabIndex={-1}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 380 }}
             style={{
-              position: 'absolute',
-              top: '1.25rem',
-              right: '1.25rem',
-              background: 'rgba(255, 255, 255, 0.15)',
-              border: 'none',
-              color: '#ffffff',
-              cursor: 'pointer',
-              padding: '0.4rem',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              outline: 'none',
+              backgroundColor: '#ffffff',
+              borderRadius: '24px',
+              width: '100%',
+              maxWidth: '740px',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 60px -15px rgba(11, 27, 69, 0.35)',
+              border: '1px solid var(--border-subtle, #e2e8f0)',
+              position: 'relative'
             }}
-            aria-label="Close"
           >
-            <X size={18} />
-          </button>
+            {/* Top Decorative Banner */}
+            <div style={{
+              backgroundColor: 'var(--navy-primary, #244092)',
+              padding: '1.75rem 2rem 1.25rem',
+              color: '#ffffff',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px',
+              position: 'relative'
+            }}>
+              <motion.button
+                onClick={onClose}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                style={{
+                  position: 'absolute',
+                  top: '1.25rem',
+                  right: '1.25rem',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                aria-label="Close profile"
+              >
+                <X size={18} />
+              </motion.button>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <AmpleLMSLogo variant="horizontal" size="sm" showSubtitle={false} />
@@ -236,29 +246,47 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             { id: 'profile', label: 'Profile Details', icon: UserIcon },
             { id: 'certification', label: 'Certification & Metrics', icon: ShieldCheck },
             { id: 'enrolled', label: `Enrolled Courses (${enrolledCourseObjects.length})`, icon: Cpu }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.75rem 1rem',
-                border: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid var(--navy-primary, #244092)' : '2px solid transparent',
-                backgroundColor: 'transparent',
-                color: activeTab === tab.id ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
-                fontWeight: activeTab === tab.id ? 700 : 500,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <tab.icon size={15} />
-              {tab.label}
-            </button>
-          ))}
+          ].map(tab => {
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.75rem 1rem',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: isTabActive ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
+                  fontWeight: isTabActive ? 700 : 500,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'color 0.15s ease'
+                }}
+              >
+                <tab.icon size={15} />
+                {tab.label}
+                {isTabActive && (
+                  <motion.div
+                    layoutId="profileTabIndicator"
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      backgroundColor: 'var(--navy-primary, #244092)',
+                      borderRadius: '2px'
+                    }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Modal Body */}
@@ -634,8 +662,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
   );
 };
 

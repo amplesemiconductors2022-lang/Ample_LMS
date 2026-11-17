@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './components/Header';
 import { LandingHero } from './components/LandingHero';
 import { CourseCatalog } from './components/CourseCatalog';
@@ -340,45 +341,54 @@ export const App: React.FC = () => {
       <AmplePreloader minDurationMs={1800} />
 
       {/* Floating Global Toast Notification */}
-      {toast && (
-        <div role="status" aria-live="polite" style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 999999,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.65rem',
-          backgroundColor: toast.type === 'error' ? '#8b93a8' : toast.type === 'info' ? 'var(--navy-primary, #244092)' : '#233a78',
-          color: '#ffffff',
-          padding: '0.75rem 1.4rem',
-          borderRadius: '9999px',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)',
-          fontSize: '0.88rem',
-          fontWeight: 600,
-          animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}>
-          {toast.type === 'error' ? <AlertCircle size={17} /> : <CheckCircle2 size={17} />}
-          <span>{toast.message}</span>
-          <button
-            aria-label="Dismiss notification"
-            onClick={() => setToast(null)}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: -24, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.94 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#ffffff',
-              cursor: 'pointer',
-              marginLeft: '0.35rem',
+              position: 'fixed',
+              top: '20px',
+              left: '50%',
+              x: '-50%',
+              zIndex: 999999,
               display: 'flex',
               alignItems: 'center',
-              padding: 0
+              gap: '0.65rem',
+              backgroundColor: toast.type === 'error' ? '#8b93a8' : toast.type === 'info' ? 'var(--navy-primary, #244092)' : '#233a78',
+              color: '#ffffff',
+              padding: '0.75rem 1.4rem',
+              borderRadius: '9999px',
+              boxShadow: '0 12px 30px -5px rgba(0, 0, 0, 0.28)',
+              fontSize: '0.88rem',
+              fontWeight: 600,
             }}
           >
-            <X size={15} />
-          </button>
-        </div>
-      )}
+            {toast.type === 'error' ? <AlertCircle size={17} /> : <CheckCircle2 size={17} />}
+            <span>{toast.message}</span>
+            <button
+              aria-label="Dismiss notification"
+              onClick={() => setToast(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                marginLeft: '0.35rem',
+                display: 'flex',
+                alignItems: 'center',
+                padding: 0
+              }}
+            >
+              <X size={15} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Authentic Ample Dark Navy Sticky Header */}
       <Header
@@ -394,93 +404,103 @@ export const App: React.FC = () => {
         onSignOut={handleSignOut}
       />
 
-      {/* Main Dynamic View */}
+      {/* Main Dynamic View with Silky Smooth Page Transition */}
       <main id="main" tabIndex={-1} style={{ flex: 1, outline: 'none' }}>
         <ErrorBoundary>
-          {currentView === 'landing' && (
-            <LandingHero
-              onExploreTracks={(category?: Category) => {
-                setCatalogCategory(category || 'All');
-                handleNavigate('catalog');
-              }}
-              onOpenDashboard={() => handleNavigate('dashboard')}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {currentView === 'landing' && (
+                <LandingHero
+                  onExploreTracks={(category?: Category) => {
+                    setCatalogCategory(category || 'All');
+                    handleNavigate('catalog');
+                  }}
+                  onOpenDashboard={() => handleNavigate('dashboard')}
+                />
+              )}
 
-          {currentView === 'catalog' && (
-            <CourseCatalog
-              courses={courses}
-              onSelectCourse={handleSelectCourse}
-              enrolledCourseIds={userProgress.enrolledCourseIds}
-              initialCategory={catalogCategory}
-              onCategoryChange={setCatalogCategory}
-            />
-          )}
+              {currentView === 'catalog' && (
+                <CourseCatalog
+                  courses={courses}
+                  onSelectCourse={handleSelectCourse}
+                  enrolledCourseIds={userProgress.enrolledCourseIds}
+                  initialCategory={catalogCategory}
+                  onCategoryChange={setCatalogCategory}
+                />
+              )}
 
-          {currentView === 'dashboard' && currentUser && currentUser.role !== 'admin' && (
-            <LMSDashboard
-              courses={courses}
-              userProgress={userProgress}
-              currentUser={currentUser}
-              onOpenCourse={handleSelectCourse}
-            />
-          )}
+              {currentView === 'dashboard' && currentUser && currentUser.role !== 'admin' && (
+                <LMSDashboard
+                  courses={courses}
+                  userProgress={userProgress}
+                  currentUser={currentUser}
+                  onOpenCourse={handleSelectCourse}
+                />
+              )}
 
-          {currentView === 'dashboard' && !currentUser && (
-            <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
-              <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>Sign in required</h1>
-              <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>Sign in to view your enrolled courses, lab hours, and progress.</p>
-              <button className="ample-btn-primary" onClick={() => handleOpenAuth('signin')}>Sign in</button>
-            </div>
-          )}
+              {currentView === 'dashboard' && !currentUser && (
+                <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+                  <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>Sign in required</h1>
+                  <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>Sign in to view your enrolled courses, lab hours, and progress.</p>
+                  <button className="ample-btn-primary" onClick={() => handleOpenAuth('signin')}>Sign in</button>
+                </div>
+              )}
 
-          {currentView === 'admin' && currentUser?.role === 'admin' && (
-            <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading admin portal…</div>}>
-              <AdminPortal
-                courses={courses}
-                onNavigate={handleNavigate}
-                onAddCourse={handleAddCourse}
-                onUpdateCourse={handleUpdateCourse}
-                onDeleteCourse={handleDeleteCourse}
-              />
-            </Suspense>
-          )}
+              {currentView === 'admin' && currentUser?.role === 'admin' && (
+                <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading admin portal…</div>}>
+                  <AdminPortal
+                    courses={courses}
+                    onNavigate={handleNavigate}
+                    onAddCourse={handleAddCourse}
+                    onUpdateCourse={handleUpdateCourse}
+                    onDeleteCourse={handleDeleteCourse}
+                  />
+                </Suspense>
+              )}
 
-          {currentView === 'admin' && currentUser?.role !== 'admin' && (
-            <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
-              <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>Admin access required</h1>
-              <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>Sign in with an administrator account to manage courses.</p>
-              <button className="ample-btn-primary" onClick={() => handleOpenAuth('signin')}>Sign in</button>
-            </div>
-          )}
+              {currentView === 'admin' && currentUser?.role !== 'admin' && (
+                <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+                  <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>Admin access required</h1>
+                  <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>Sign in with an administrator account to manage courses.</p>
+                  <button className="ample-btn-primary" onClick={() => handleOpenAuth('signin')}>Sign in</button>
+                </div>
+              )}
 
-          {currentView === 'lesson' && currentUser && selectedCourse && (
-            <LessonViewer
-              course={selectedCourse}
-              onBack={() => handleNavigate('catalog')}
-              onCompleteLesson={handleCompleteLesson}
-              completedLessonIds={userProgress.completedLessonIds}
-            />
-          )}
+              {currentView === 'lesson' && currentUser && selectedCourse && (
+                <LessonViewer
+                  course={selectedCourse}
+                  onBack={() => handleNavigate('catalog')}
+                  onCompleteLesson={handleCompleteLesson}
+                  completedLessonIds={userProgress.completedLessonIds}
+                />
+              )}
 
-          {currentView === 'lesson' && (!currentUser || !selectedCourse) && (
-            <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
-              <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>
-                {!currentUser ? 'Sign in required' : 'Select a course to begin'}
-              </h1>
-              <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>
-                {!currentUser
-                  ? 'Sign in with your account to access course lessons and track completion.'
-                  : 'Choose a course from the catalog to launch its lesson viewer.'}
-              </p>
-              <button
-                className="ample-btn-primary"
-                onClick={() => (!currentUser ? handleOpenAuth('signin') : handleNavigate('catalog'))}
-              >
-                {!currentUser ? 'Sign in' : 'Browse Courses'}
-              </button>
-            </div>
-          )}
+              {currentView === 'lesson' && (!currentUser || !selectedCourse) && (
+                <div role="alert" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+                  <h1 style={{ fontSize: '1.8rem', color: 'var(--navy-dark)' }}>
+                    {!currentUser ? 'Sign in required' : 'Select a course to begin'}
+                  </h1>
+                  <p style={{ margin: '.75rem 0 1.5rem', color: 'var(--text-secondary)' }}>
+                    {!currentUser
+                      ? 'Sign in with your account to access course lessons and track completion.'
+                      : 'Choose a course from the catalog to launch its lesson viewer.'}
+                  </p>
+                  <button
+                    className="ample-btn-primary"
+                    onClick={() => (!currentUser ? handleOpenAuth('signin') : handleNavigate('catalog'))}
+                  >
+                    {!currentUser ? 'Sign in' : 'Browse Courses'}
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </ErrorBoundary>
       </main>
 

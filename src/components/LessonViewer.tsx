@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, CheckCircle, PlayCircle, BookOpen, Code2,
   HelpCircle, ChevronRight, Check, RotateCcw
@@ -78,8 +79,10 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        <button
+        <motion.button
           onClick={onBack}
+          whileHover={{ x: -3 }}
+          whileTap={{ scale: 0.96 }}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -98,7 +101,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
         >
           <ArrowLeft size={15} />
           Back to Catalog
-        </button>
+        </motion.button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -106,8 +109,10 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
               {Math.round((completedLessonIds.filter(id => allLessons.some(l => l.id === id)).length / allLessons.length) * 100)}%
             </strong>
           </span>
-          <button
+          <motion.button
             onClick={handleNextLesson}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -127,7 +132,7 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
             {isCompleted ? <Check size={15} /> : null}
             {isCompleted ? 'Completed — Next' : 'Complete & Next'}
             <ChevronRight size={15} />
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -262,78 +267,54 @@ export const LessonViewer: React.FC<LessonViewerProps> = ({
             display: 'flex',
             borderBottom: '1px solid var(--border-subtle)',
             backgroundColor: '#ffffff',
-            padding: '0.5rem 1.75rem 0'
+            padding: '0.5rem 1.75rem 0',
+            gap: '0.5rem'
           }}>
-            <button
-              onClick={() => setActiveTab('theory')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.75rem 1.25rem',
-                fontSize: '0.86rem',
-                fontWeight: activeTab === 'theory' ? 700 : 500,
-                color: activeTab === 'theory' ? 'var(--navy-primary)' : 'var(--text-muted)',
-                borderBottom: activeTab === 'theory' ? '2.5px solid var(--navy-primary)' : '2.5px solid transparent',
-                borderTop: 'none',
-                borderLeft: 'none',
-                borderRight: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <BookOpen size={15} />
-              Concept & Architecture
-            </button>
-
-            <button
-              onClick={() => setActiveTab('code')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.75rem 1.25rem',
-                fontSize: '0.86rem',
-                fontWeight: activeTab === 'code' ? 700 : 500,
-                color: activeTab === 'code' ? 'var(--navy-primary)' : 'var(--text-muted)',
-                borderBottom: activeTab === 'code' ? '2.5px solid var(--navy-primary)' : '2.5px solid transparent',
-                borderTop: 'none',
-                borderLeft: 'none',
-                borderRight: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Code2 size={15} />
-              Hardware Code Snippet
-            </button>
-
-            {activeLesson.content.quiz && (
-              <button
-                onClick={() => setActiveTab('quiz')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.75rem 1.25rem',
-                  fontSize: '0.86rem',
-                  fontWeight: activeTab === 'quiz' ? 700 : 500,
-                  color: activeTab === 'quiz' ? 'var(--navy-primary)' : 'var(--text-muted)',
-                  borderBottom: activeTab === 'quiz' ? '2.5px solid var(--navy-primary)' : '2.5px solid transparent',
-                  borderTop: 'none',
-                  borderLeft: 'none',
-                  borderRight: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <HelpCircle size={15} />
-                Knowledge Check ({activeLesson.content.quiz.length})
-              </button>
-            )}
+            {[
+              { id: 'theory', label: 'Concept & Architecture', icon: BookOpen },
+              { id: 'code', label: 'Hardware Code Snippet', icon: Code2 },
+              ...(activeLesson.content.quiz ? [{ id: 'quiz', label: `Knowledge Check (${activeLesson.content.quiz.length})`, icon: HelpCircle }] : [])
+            ].map(tab => {
+              const isTabActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.75rem 1.25rem',
+                    fontSize: '0.86rem',
+                    fontWeight: isTabActive ? 700 : 500,
+                    color: isTabActive ? 'var(--navy-primary)' : 'var(--text-muted)',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    transition: 'color 0.15s ease'
+                  }}
+                >
+                  <tab.icon size={15} />
+                  {tab.label}
+                  {isTabActive && (
+                    <motion.div
+                      layoutId="lessonTabIndicator"
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '2.5px',
+                        backgroundColor: 'var(--navy-primary)',
+                        borderRadius: '2px'
+                      }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab 1: Theory */}

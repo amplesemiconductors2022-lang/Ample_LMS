@@ -1,5 +1,6 @@
 import { useModalA11y } from '../hooks';
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Mail, Lock, User as UserIcon,
   ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff, CheckCircle2, RotateCw
@@ -50,8 +51,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setInfoMessage('');
     }
   }, [isOpen, initialTab]);
-
-  if (!isOpen) return null;
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,148 +151,162 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.65)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 99999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.25rem',
-        animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Ample LMS Authentication"
-        tabIndex={-1}
-        className="auth-modal-dialog"
-        style={{
-          outline: 'none',
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          width: '100%',
-          maxWidth: '460px',
-          height: '525px',
-          maxHeight: '94vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '1.35rem 1.6rem 1.1rem',
-          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
-          border: '1px solid var(--border-subtle, #e2e8f0)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
           style={{
-            position: 'absolute',
-            top: '0.95rem',
-            right: '1rem',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted, #64748b)',
-            cursor: 'pointer',
-            padding: '0.35rem',
-            borderRadius: '50%',
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(11, 27, 69, 0.65)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'background-color 0.15s ease',
-            zIndex: 10
+            padding: '1.25rem',
           }}
-          aria-label="Close dialog"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
         >
-          <X size={18} />
-        </button>
-
-        {/* Top Section: Brand Header & Tabs */}
-        <div>
-          <div style={{ textAlign: 'center', marginBottom: '0.65rem' }}>
-            <AmpleLMSLogo variant="vertical" size="md" showSubtitle={true} />
-            <h2 style={{
-              fontSize: '1.22rem',
-              fontWeight: 800,
-              color: 'var(--navy-dark, #0f214a)',
-              marginTop: '0.45rem',
-              marginBottom: '0.15rem'
-            }}>
-              {activeTab === 'signin'
-                ? 'Sign in to Your Silicon Account'
-                : activeTab === 'signup'
-                  ? 'Create Your Ample LMS Account'
-                  : 'Verify Your Email Address'}
-            </h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #475569)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.35 }}>
-              {activeTab === 'signin'
-                ? 'Access semiconductor courses, campus cohorts, and certifications.'
-                : activeTab === 'signup'
-                  ? ""
-                  : `Enter the 6-digit code sent to ${signUpEmail || 'your email'}`}
-            </p>
-          </div>
-
-          {/* Tab Selector (Sign In vs Create Account) */}
-          {activeTab !== 'verify' && (
-            <div style={{
+          <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ample LMS Authentication"
+            tabIndex={-1}
+            className="auth-modal-dialog"
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 380 }}
+            style={{
+              outline: 'none',
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              width: '100%',
+              maxWidth: '460px',
+              height: '525px',
+              maxHeight: '94vh',
               display: 'flex',
-              backgroundColor: 'var(--bg-secondary, #f8fafc)',
-              padding: '0.2rem',
-              borderRadius: '9999px',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              padding: '1.35rem 1.6rem 1.1rem',
+              boxShadow: '0 25px 60px -15px rgba(11, 27, 69, 0.35)',
               border: '1px solid var(--border-subtle, #e2e8f0)',
-              marginBottom: '0.85rem'
-            }}>
-              <button
-                type="button"
-                onClick={() => { setActiveTab('signin'); setErrorMessage(''); setInfoMessage(''); }}
-                style={{
-                  flex: 1,
-                  padding: '0.38rem 0',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Close Button */}
+            <motion.button
+              onClick={onClose}
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: 'absolute',
+                top: '0.95rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted, #64748b)',
+                cursor: 'pointer',
+                padding: '0.35rem',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10
+              }}
+              aria-label="Close dialog"
+            >
+              <X size={18} />
+            </motion.button>
+
+            {/* Top Section: Brand Header & Tabs */}
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '0.65rem' }}>
+                <AmpleLMSLogo variant="vertical" size="md" showSubtitle={true} />
+                <h2 style={{
+                  fontSize: '1.22rem',
+                  fontWeight: 800,
+                  color: 'var(--navy-dark, #0f214a)',
+                  marginTop: '0.45rem',
+                  marginBottom: '0.15rem'
+                }}>
+                  {activeTab === 'signin'
+                    ? 'Sign in to Your Silicon Account'
+                    : activeTab === 'signup'
+                      ? 'Create Your Ample LMS Account'
+                      : 'Verify Your Email Address'}
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #475569)', maxWidth: '360px', margin: '0 auto', lineHeight: 1.35 }}>
+                  {activeTab === 'signin'
+                    ? 'Access semiconductor courses, campus cohorts, and certifications.'
+                    : activeTab === 'signup'
+                      ? ""
+                      : `Enter the 6-digit code sent to ${signUpEmail || 'your email'}`}
+                </p>
+              </div>
+
+              {/* Tab Selector with Smooth Framer Motion Gliding Pill */}
+              {activeTab !== 'verify' && (
+                <div style={{
+                  display: 'flex',
+                  backgroundColor: 'var(--bg-secondary, #f8fafc)',
+                  padding: '0.25rem',
                   borderRadius: '9999px',
-                  border: 'none',
-                  backgroundColor: activeTab === 'signin' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'signin' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
-                  fontWeight: activeTab === 'signin' ? 700 : 500,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  boxShadow: activeTab === 'signin' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-                  transition: 'all 0.18s ease'
-                }}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => { setActiveTab('signup'); setErrorMessage(''); setInfoMessage(''); }}
-                style={{
-                  flex: 1,
-                  padding: '0.38rem 0',
-                  borderRadius: '9999px',
-                  border: 'none',
-                  backgroundColor: activeTab === 'signup' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'signup' ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
-                  fontWeight: activeTab === 'signup' ? 700 : 500,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  boxShadow: activeTab === 'signup' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-                  transition: 'all 0.18s ease'
-                }}
-              >
-                Create Account
-              </button>
-            </div>
-          )}
+                  border: '1px solid var(--border-subtle, #e2e8f0)',
+                  marginBottom: '0.85rem',
+                  position: 'relative'
+                }}>
+                  {(['signin', 'signup'] as const).map((tab) => {
+                    const isTabActive = activeTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => { setActiveTab(tab); setErrorMessage(''); setInfoMessage(''); }}
+                        style={{
+                          flex: 1,
+                          padding: '0.4rem 0',
+                          borderRadius: '9999px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: isTabActive ? 'var(--navy-primary, #244092)' : 'var(--text-muted, #64748b)',
+                          fontWeight: isTabActive ? 700 : 500,
+                          fontSize: '0.82rem',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 1,
+                          transition: 'color 0.18s ease'
+                        }}
+                      >
+                        {isTabActive && (
+                          <motion.span
+                            layoutId="authModalTabIndicator"
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              borderRadius: '9999px',
+                              backgroundColor: '#ffffff',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                              zIndex: -1
+                            }}
+                            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                          />
+                        )}
+                        {tab === 'signin' ? 'Sign In' : 'Create Account'}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
           {/* Feedback Alerts */}
           {errorMessage && (
@@ -426,10 +439,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </label>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading}
                 className="ample-btn-primary"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   width: '100%',
                   justifyContent: 'center',
@@ -441,7 +456,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 {isLoading ? 'Verifying Credentials...' : 'Sign In to Ample LMS'}
                 {!isLoading && <ArrowRight size={15} />}
-              </button>
+              </motion.button>
             </form>
           )}
 
@@ -584,10 +599,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading}
                 className="ample-btn-primary"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   width: '100%',
                   justifyContent: 'center',
@@ -599,7 +616,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 {isLoading ? 'Sending Brevo Code...' : 'Create Account & Send Code'}
                 {!isLoading && <ArrowRight size={15} />}
-              </button>
+              </motion.button>
             </form>
           )}
 
@@ -643,10 +660,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 />
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading || verificationCode.length < 6}
                 className="ample-btn-primary"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   width: '100%',
                   justifyContent: 'center',
@@ -658,7 +677,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 {isLoading ? 'Verifying Code...' : 'Verify Email & Complete Registration'}
                 {!isLoading && <ArrowRight size={15} />}
-              </button>
+              </motion.button>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem', fontSize: '0.78rem' }}>
                 <button
@@ -713,7 +732,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <ShieldCheck size={13} color="#233a78" />
           <span>Ample Semiconductors Academy • Verified Industry Credentials</span>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
   );
 };

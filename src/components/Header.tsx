@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Award, BookOpen, ShieldCheck, LogIn, LogOut, ChevronDown, ExternalLink, Home
 } from 'lucide-react';
@@ -63,15 +64,17 @@ export const Header: React.FC<HeaderProps> = ({
         alignItems: 'center',
         gap: '1rem'
       }}>
-        <button
+        <motion.button
           className="hd-logo"
           onClick={() => onNavigate(currentUser?.role === 'admin' ? 'admin' : 'landing')}
           aria-label="Ample LMS home"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <AmpleLMSLogo theme="dark" variant="horizontal" size="md" showSubtitle={true} />
-        </button>
+        </motion.button>
 
-        <nav className="hd-nav" aria-label="Main">
+        <nav className="hd-nav" aria-label="Main" style={{ position: 'relative' }}>
           {(currentUser?.role === 'admin'
             ? [
               ['admin', 'Admin Management Console', ShieldCheck],
@@ -81,15 +84,32 @@ export const Header: React.FC<HeaderProps> = ({
               ['catalog', 'Courses', BookOpen],
               ['dashboard', 'My Dashboard', Award],
             ] as const
-          ).map(([view, label, Icon]) => (
-            <button key={view} onClick={() => onNavigate(view)} aria-current={currentView === view ? 'page' : undefined}>
-              {Icon && <Icon size={14} aria-hidden="true" />}{label}
-            </button>
-          ))}
+          ).map(([view, label, Icon]) => {
+            const isActive = currentView === view;
+            return (
+              <button
+                key={view}
+                onClick={() => onNavigate(view)}
+                aria-current={isActive ? 'page' : undefined}
+                style={{ position: 'relative' }}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="activeNavPill"
+                    className="hd-active-pill"
+                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  {Icon && <Icon size={14} aria-hidden="true" />}{label}
+                </span>
+              </button>
+            );
+          })}
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => window.open('#landing', '_blank')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', position: 'relative', zIndex: 2 }}
               title="View live public website"
             >
               <ExternalLink size={14} aria-hidden="true" />
@@ -144,69 +164,77 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               {/* User Dropdown Menu */}
-              {isDropdownOpen && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  width: '260px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '16px',
-                  boxShadow: '0 10px 30px -5px rgba(15, 23, 42, 0.15)',
-                  border: '1px solid var(--border-subtle, #e2e8f0)',
-                  padding: '0.75rem',
-                  zIndex: 100,
-                  animation: 'fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}>
-                  <div style={{ padding: '0.5rem 0.65rem', borderBottom: '1px solid var(--border-subtle, #e2e8f0)', marginBottom: '0.5rem' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--navy-dark, #0f214a)' }}>
-                      {currentUser.name}
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      width: '260px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '16px',
+                      boxShadow: '0 12px 36px -4px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.06)',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      padding: '0.75rem',
+                      zIndex: 100,
+                      transformOrigin: 'top right'
+                    }}
+                  >
+                    <div style={{ padding: '0.5rem 0.65rem', borderBottom: '1px solid var(--border-subtle, #e2e8f0)', marginBottom: '0.5rem' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--navy-dark, #0f214a)' }}>
+                        {currentUser.name}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
+                        {currentUser.email}
+                      </div>
+                      <div style={{ marginTop: '0.35rem' }}>
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          backgroundColor: currentUser.role === 'admin' ? '#eff6ff' : '#eff2fa',
+                          color: currentUser.role === 'admin' ? '#30498f' : '#233a78',
+                          padding: '0.1rem 0.45rem',
+                          borderRadius: '9999px',
+                          border: currentUser.role === 'admin' ? '1px solid #bfdbfe' : '1px solid #b2c0e9'
+                        }}>
+                          {currentUser.role === 'admin' ? 'Administrator' : 'Verified Student'}
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
-                      {currentUser.email}
-                    </div>
-                    <div style={{ marginTop: '0.35rem' }}>
-                      <span style={{
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        backgroundColor: currentUser.role === 'admin' ? '#eff6ff' : '#eff2fa',
-                        color: currentUser.role === 'admin' ? '#30498f' : '#233a78',
-                        padding: '0.1rem 0.45rem',
-                        borderRadius: '9999px',
-                        border: currentUser.role === 'admin' ? '1px solid #bfdbfe' : '1px solid #b2c0e9'
-                      }}>
-                        {currentUser.role === 'admin' ? 'Administrator' : 'Verified Student'}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div>
-                    <button
-                      onClick={() => { setIsDropdownOpen(false); onSignOut(); }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.6rem 0.65rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: '#6f7993',
-                        fontSize: '0.84rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        textAlign: 'left'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
-                      <LogOut size={15} />
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
+                    <div>
+                      <button
+                        onClick={() => { setIsDropdownOpen(false); onSignOut(); }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.6rem 0.65rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#6f7993',
+                          fontSize: '0.84rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <LogOut size={15} />
+                        Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Flame, Play,
   ShieldCheck, MessageSquare, Plus, Send, CheckCircle2,
@@ -105,19 +106,24 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
       )}
 
       {/* Welcome Banner */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid var(--border-subtle, #e2e8f0)',
-        borderRadius: '20px',
-        padding: '2rem 2.25rem',
-        marginBottom: '2rem',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '1.5rem',
-        boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
-      }}>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          backgroundColor: '#ffffff',
+          border: '1px solid var(--border-subtle, #e2e8f0)',
+          borderRadius: '20px',
+          padding: '2rem 2.25rem',
+          marginBottom: '2rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1.5rem',
+          boxShadow: '0 4px 16px -2px rgba(15, 23, 42, 0.04)'
+        }}
+      >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <span style={{
@@ -141,19 +147,23 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button
+          <motion.button
             onClick={() => {
               const active = enrolledCourses[0] || courses[0];
               if (active) onOpenCourse(active);
             }}
             className="ample-btn-primary"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
           >
             <Play size={16} />
             Resume Active Course
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             onClick={() => setIsOpenAskModal(true)}
+            whileHover={{ scale: 1.02, backgroundColor: '#f8fafc' }}
+            whileTap={{ scale: 0.97 }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -166,14 +176,14 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               fontSize: '0.88rem',
               fontWeight: 600,
               cursor: 'pointer',
-              transition: 'all 0.15s ease'
+              transition: 'border-color 0.15s ease'
             }}
           >
             <MessageSquare size={16} />
             Ask Faculty Question
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Metrics Row - Clean Academic Metrics (NO hands-on lab time) */}
       <div style={{
@@ -183,7 +193,14 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         marginBottom: '2.5rem'
       }}>
         {/* Metric 1: Streak */}
-        <div className="ample-card" style={{ padding: '1.4rem' }}>
+        <motion.div
+          className="ample-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ y: -4, scale: 1.01 }}
+          style={{ padding: '1.4rem' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>LEARNING STREAK</span>
             <Flame size={18} color="#576488" />
@@ -194,10 +211,17 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
             Consistent daily engineering study
           </div>
-        </div>
+        </motion.div>
 
         {/* Metric 2: Completed Lessons */}
-        <div className="ample-card" style={{ padding: '1.4rem' }}>
+        <motion.div
+          className="ample-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ y: -4, scale: 1.01 }}
+          style={{ padding: '1.4rem' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>COMPLETED LESSONS</span>
             <BookOpen size={18} color="#233a78" />
@@ -208,10 +232,17 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
             Curriculum theory & architectures finished
           </div>
-        </div>
+        </motion.div>
 
         {/* Metric 3: Assessment Score */}
-        <div className="ample-card" style={{ padding: '1.4rem' }}>
+        <motion.div
+          className="ample-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ y: -4, scale: 1.01 }}
+          style={{ padding: '1.4rem' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>ASSESSMENT ACCURACY</span>
             <CheckCircle2 size={18} color="var(--navy-primary, #244092)" />
@@ -222,10 +253,17 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
             Knowledge checks passed with honors
           </div>
-        </div>
+        </motion.div>
 
         {/* Metric 4: Enrolled Courses */}
-        <div className="ample-card" style={{ padding: '1.4rem' }}>
+        <motion.div
+          className="ample-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ y: -4, scale: 1.01 }}
+          style={{ padding: '1.4rem' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)', fontWeight: 600 }}>ACTIVE COURSES</span>
             <Layers size={18} color="#5e7ac9" />
@@ -236,7 +274,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.2rem' }}>
             Under active study & evaluation
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Main Grid: Enrolled Courses (Left) & Faculty Questions / Enquiries Desk (Right) */}
@@ -260,15 +298,18 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               const progressPct = Math.round((completedCount / (allLessons.length || 1)) * 100);
 
               return (
-                <div
+                <motion.div
                   key={course.id}
                   className="ample-card"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4, boxShadow: '0 16px 36px -8px rgba(36, 64, 146, 0.12)' }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     padding: '1.6rem',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '1rem',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
@@ -303,7 +344,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Animated Progress Bar */}
                   <div style={{
                     width: '100%',
                     height: '8px',
@@ -312,13 +353,16 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                     overflow: 'hidden',
                     border: '1px solid var(--border-subtle, #e2e8f0)'
                   }}>
-                    <div style={{
-                      width: `${progressPct}%`,
-                      height: '100%',
-                      backgroundColor: 'var(--navy-primary, #244092)',
-                      borderRadius: '9999px',
-                      transition: 'width 0.4s ease'
-                    }} />
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ duration: 0.75, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      style={{
+                        height: '100%',
+                        backgroundColor: 'var(--navy-primary, #244092)',
+                        borderRadius: '9999px',
+                      }}
+                    />
                   </div>
 
                   {/* Instructor Note & Resume Button */}
@@ -334,8 +378,10 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                       </span>
                     </div>
 
-                    <button
+                    <motion.button
                       onClick={() => onOpenCourse(course)}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.96 }}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -353,9 +399,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                     >
                       <Play size={14} fill="var(--navy-primary, #244092)" />
                       Continue Lessons
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -497,140 +543,162 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
       </div>
 
-      {/* Ask Question / Submit Enquiry Modal */}
-      {isOpenAskModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.45)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem',
-          zIndex: 10000
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
-            width: '100%',
-            maxWidth: '540px',
-            padding: '2rem',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.18)',
-            border: '1px solid var(--border-subtle, #e2e8f0)',
-            animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MessageSquare size={20} color="var(--navy-primary, #244092)" />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy-dark, #0f214a)' }}>
-                  Ask Ample Course Faculty
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsOpenAskModal(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #64748b)' }}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitEnquiry} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
-                  Related Silicon Course
-                </label>
-                <select
-                  value={selectedTrack}
-                  onChange={(e) => setSelectedTrack(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-strong, #cbd5e1)',
-                    fontSize: '0.88rem'
-                  }}
-                >
-                  {courses.map(c => (
-                    <option key={c.id} value={c.title}>{c.title}</option>
-                  ))}
-                  <option value="General Semiconductor Question">General Semiconductor Question</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
-                  Question Subject
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Query regarding CTS skew budget or SDC false path definition"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-strong, #cbd5e1)',
-                    fontSize: '0.88rem'
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
-                  Detailed Question or Technical Query
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Describe the module topic, question, or architectural doubt in detail..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-strong, #cbd5e1)',
-                    fontSize: '0.88rem',
-                    fontFamily: 'inherit',
-                    resize: 'vertical'
-                  }}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button
-                  type="button"
+      {/* Ask Question / Submit Enquiry Modal with Framer Motion */}
+      <AnimatePresence>
+        {isOpenAskModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(11, 27, 69, 0.55)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              zIndex: 10000
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsOpenAskModal(false);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 380 }}
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '20px',
+                width: '100%',
+                maxWidth: '540px',
+                padding: '2rem',
+                boxShadow: '0 25px 60px -15px rgba(11, 27, 69, 0.35)',
+                border: '1px solid var(--border-subtle, #e2e8f0)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <MessageSquare size={20} color="var(--navy-primary, #244092)" />
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--navy-dark, #0f214a)' }}>
+                    Ask Ample Course Faculty
+                  </h3>
+                </div>
+                <motion.button
                   onClick={() => setIsOpenAskModal(false)}
-                  style={{
-                    padding: '0.6rem 1.15rem',
-                    borderRadius: '9999px',
-                    border: '1px solid var(--border-subtle, #e2e8f0)',
-                    backgroundColor: '#ffffff',
-                    color: 'var(--text-secondary, #475569)',
-                    fontSize: '0.86rem',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #64748b)', padding: '0.2rem' }}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingEnquiry}
-                  className="ample-btn-primary"
-                  style={{ padding: '0.6rem 1.25rem', fontSize: '0.86rem' }}
-                >
-                  <Send size={14} />
-                  {isSubmittingEnquiry ? 'Submitting...' : 'Submit to Faculty'}
-                </button>
+                  <X size={18} />
+                </motion.button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleSubmitEnquiry} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
+                    Related Silicon Course
+                  </label>
+                  <select
+                    value={selectedTrack}
+                    onChange={(e) => setSelectedTrack(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-strong, #cbd5e1)',
+                      fontSize: '0.88rem'
+                    }}
+                  >
+                    {courses.map(c => (
+                      <option key={c.id} value={c.title}>{c.title}</option>
+                    ))}
+                    <option value="General Semiconductor Question">General Semiconductor Question</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
+                    Question Subject
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Query regarding CTS skew budget or SDC false path definition"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-strong, #cbd5e1)',
+                      fontSize: '0.88rem'
+                    }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--navy-dark, #0f214a)', marginBottom: '0.35rem' }}>
+                    Detailed Question or Technical Query
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Describe the module topic, question, or architectural doubt in detail..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-strong, #cbd5e1)',
+                      fontSize: '0.88rem',
+                      fontFamily: 'inherit',
+                      resize: 'vertical'
+                    }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  <motion.button
+                    type="button"
+                    onClick={() => setIsOpenAskModal(false)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      padding: '0.6rem 1.15rem',
+                      borderRadius: '9999px',
+                      border: '1px solid var(--border-subtle, #e2e8f0)',
+                      backgroundColor: '#ffffff',
+                      color: 'var(--text-secondary, #475569)',
+                      fontSize: '0.86rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmittingEnquiry}
+                    className="ample-btn-primary"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ padding: '0.6rem 1.25rem', fontSize: '0.86rem' }}
+                  >
+                    <Send size={14} />
+                    {isSubmittingEnquiry ? 'Submitting...' : 'Submit to Faculty'}
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
